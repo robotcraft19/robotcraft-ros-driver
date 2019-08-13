@@ -1,5 +1,3 @@
-#include "amazebot_controller.h"
-
 /**
  * @file amazebot.cpp
  * @author Nicolas Filliol <nicolas.filliol@icloud.com>, Erwin Lejeune <erwin.lejeune15@gmail.com>, 
@@ -12,6 +10,11 @@
  * @copyright Copyright (c) 2019
  * 
  */
+
+
+#include "amazebot_controller.h"
+
+
 int main(int argc, char **argv)
 {
     // Initialize ROS
