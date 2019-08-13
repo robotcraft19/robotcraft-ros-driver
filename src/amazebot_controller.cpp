@@ -46,6 +46,37 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
 }
 
 /**
+ * @brief 
+ * 
+ * @param front_distance_msgs 
+ */
+void AmazebotController::front_distance_callback(const std_msgs::Float32& front_distance_msgs)
+{
+	frontIR = front_distance_msgs.data;
+}
+
+/**
+ * @brief 
+ * 
+ * @param left_distance_msgs 
+ */
+void AmazebotController::left_distance_callback(const std_msgs::Float32& left_distance_msgs)
+{
+	leftIR = left_distance_msgs.data;
+}
+
+/**
+ * @brief 
+ * 
+ * @param right_distance_msgs 
+ */
+void AmazebotController::right_distance_callback(const std_msgs::Float32& right_distance_msgs)
+{
+	rightIR = right_distance_msgs.data;
+}
+
+
+/**
  * @brief Laser Scan callback of subscriber
  * 
  * @param msg LaserScan message received by subscriber
@@ -113,11 +144,21 @@ AmazebotController::AmazebotController()
     // Initialize ROS
     this->node_handle = ros::NodeHandle();
 
-    // Create a publisher object, able to push messages
-    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
-
-    // Create a subscriber for laser scans 
+    //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
+	this->pose_sub = n.subscribe("/pose", 10, poseCallback);
+	this->front_distance_sub = n.subscribe("/front_distance", 10, front_distance_callback);
+	this->right_distance_sub = n.subscribe("/right_distance", 10, right_distance_callback);
+	this->left_distance_sub = n.subscribe("/left_distance", 10, left_distance_callback);
+
+	//Publishers
+    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
+	this->odom_pub = n.advertise<nav_msgs::Odometry>("/odom",10 );
+    this->rgb_leds_pub = n.advertise<std_msgs::UInt8MultiArray>("/rgb_leds",60);
+	this->reset_pose_pub = n.advertise<geometry_msgs::Pose2D>("/initial_pose",10);
+
+    current_time = ros::Time::now();
+  	last_time = ros::Time::now();
 }
 
 /**
@@ -127,9 +168,13 @@ AmazebotController::AmazebotController()
 void AmazebotController::run()
 {
     // Send messages in a loop
+    
     ros::Rate loop_rate(10); // Update rate of 10Hz
     while (ros::ok()) 
     {
+        current_time = ros::Time::now();	
+		double dt = (current_time - last_time).toSec();
+        
         // Calculate the command to apply
         auto msg = calculateCommand();
 
