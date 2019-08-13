@@ -174,13 +174,15 @@ void AmazebotController::run()
     {
         current_time = ros::Time::now();	
 		double dt = (current_time - last_time).toSec();
-        
+
         // Calculate the command to apply
         auto msg = calculateCommand();
 
         // Publish the new command
         this->cmd_vel_pub.publish(msg);
 
+
+        last_time = current_time;
         ros::spinOnce();
 
         // And throttle the loop
