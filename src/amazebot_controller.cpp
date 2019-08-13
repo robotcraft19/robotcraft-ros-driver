@@ -1,7 +1,7 @@
 /**
  * @file robot_controller.cpp
  * @author Nicolas Filliol <nicolas.filliol@icloud.com>, Erwin Lejeune <erwin.lejeune15@gmail.com>, 
- *         Oleksandr Koreiba, Jan Tiepelt, 
+ *         Oleksandr Koreiba<alex@koreiba.com>, Jan Tiepelt, 
  *         Giovanni Alexander Bergamaschi
  * @brief Amazebot Controller Class
  * @version 0.1
