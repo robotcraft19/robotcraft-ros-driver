@@ -75,6 +75,11 @@ void AmazebotController::rightDistanceCallback(const std_msgs::Float32& right_di
 	rightIR = right_distance_msgs.data;
 }
 
+/**
+ * @brief 
+ * 
+ * @param Pose2D_msgs 
+ */
 void AmazebotController::poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs)
 {
     poseRobot.x = Pose2D_msgs.x;
@@ -213,10 +218,10 @@ AmazebotController::AmazebotController()
 
     //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
-	this->pose_sub = node_handle.subscribe("/pose", 10, poseCallback, this);
-	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, frontDistanceCallback, this);
-	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, rightDistanceCallback, this);
-	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, leftDistanceCallback, this);
+	this->pose_sub = node_handle.subscribe("/pose", 10, &AmazebotController::poseCallback, this);
+	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, &AmazebotController::frontDistanceCallback, this);
+	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, &AmazebotController::rightDistanceCallback, this);
+	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
