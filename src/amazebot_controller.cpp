@@ -50,7 +50,7 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
  * 
  * @param front_distance_msgs 
  */
-void AmazebotController::front_distance_callback(const std_msgs::Float32& front_distance_msgs)
+void AmazebotController::frontDistanceCallback(const std_msgs::Float32& front_distance_msgs)
 {
 	frontIR = front_distance_msgs.data;
 }
@@ -60,7 +60,7 @@ void AmazebotController::front_distance_callback(const std_msgs::Float32& front_
  * 
  * @param left_distance_msgs 
  */
-void AmazebotController::left_distance_callback(const std_msgs::Float32& left_distance_msgs)
+void AmazebotController::leftDistanceCallback(const std_msgs::Float32& left_distance_msgs)
 {
 	leftIR = left_distance_msgs.data;
 }
@@ -70,11 +70,17 @@ void AmazebotController::left_distance_callback(const std_msgs::Float32& left_di
  * 
  * @param right_distance_msgs 
  */
-void AmazebotController::right_distance_callback(const std_msgs::Float32& right_distance_msgs)
+void AmazebotController::rightDistanceCallback(const std_msgs::Float32& right_distance_msgs)
 {
 	rightIR = right_distance_msgs.data;
 }
 
+void AmazebotController::poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs)
+{
+    poseRobot.x = Pose2D_msgs.x;
+	poseRobot.y = Pose2D_msgs.y;
+	poseRobot.theta = Pose2D_msgs.theta;
+}
 
 /**
  * @brief Laser Scan callback of subscriber
@@ -136,6 +142,67 @@ void AmazebotController::calculateRobotLost()
 }
 
 /**
+ * @brief 
+ * 
+ */
+void AmazebotController::odometryHelper() 
+{
+    // Update the Pose to publish in the Odometry
+    double dt = (current_time - last_time).toSec();
+    double delta_x = (velocityRobot.x * cos(poseRobot.theta) - velocityRobot.y * sin(velocityRobot.theta)) * dt;
+    double delta_y = (velocityRobot.x * sin(poseRobot.theta) - velocityRobot.y * cos(velocityRobot.theta)) * dt;
+    double delta_theta = velocityRobot.theta * dt;
+
+    poseRobot.x += delta_x;
+    poseRobot.y += delta_y;
+    poseRobot.theta += delta_theta;
+
+    // Setting up the Transforn with the Odometry updates
+    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(poseRobot.theta);    
+	geometry_msgs::TransformStamped odom_trans;
+	odom_trans.header.stamp = current_time;
+	odom_trans.header.frame_id = "odom";
+	odom_trans.child_frame_id = "base_link";
+  	odom_trans.transform.translation.x = (poseRobot.x)/100;
+    odom_trans.transform.translation.y = (poseRobot.y)/100;
+    odom_trans.transform.translation.z = 0.0;
+    odom_trans.transform.rotation = odom_quat;
+
+    // Sending the transform
+    odom_broadcaster.sendTransform(odom_trans);
+
+    // Seting new pose
+	odom_msg.header.stamp = current_time;
+	odom_msg.header.frame_id = "odom";
+	odom_msg.pose.pose.position.x = poseRobot.x;
+	odom_msg.pose.pose.position.y = poseRobot.y;
+ 	odom_msg.pose.pose.position.z = 0.0;
+	odom_msg.pose.pose.orientation = odom_quat;
+
+    // Setting velocity
+	odom_msg.child_frame_id = "base_link";
+    odom_msg.twist.twist.linear.x = velocityRobot.x;
+    odom_msg.twist.twist.linear.y = velocityRobot.y;
+    odom_msg.twist.twist.angular.z = velocityRobot.theta;
+
+	// Publish the odometry message
+	odom_pub.publish(odom_msg);  
+}
+
+/**
+ * @brief 
+ * 
+ */
+void AmazebotController::initialPose() 
+{
+    // Publish initial pose data
+	initial_pose_msg.x = initialPoseRobot.x;
+	initial_pose_msg.y = initialPoseRobot.y;
+	initial_pose_msg.theta = initialPoseRobot.theta;		
+	initial_pose_pub.publish(initial_pose_msg);
+}
+
+/**
  * @brief Construct a new Robot Controller:: Robot Controller object
  * 
  */
@@ -146,19 +213,21 @@ AmazebotController::AmazebotController()
 
     //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
-	this->pose_sub = n.subscribe("/pose", 10, poseCallback);
-	this->front_distance_sub = n.subscribe("/front_distance", 10, front_distance_callback);
-	this->right_distance_sub = n.subscribe("/right_distance", 10, right_distance_callback);
-	this->left_distance_sub = n.subscribe("/left_distance", 10, left_distance_callback);
+	this->pose_sub = node_handle.subscribe("/pose", 10, poseCallback);
+	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, frontDistanceCallback);
+	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, rightDistanceCallback);
+	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, leftDistanceCallback);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
-	this->odom_pub = n.advertise<nav_msgs::Odometry>("/odom",10 );
-    this->rgb_leds_pub = n.advertise<std_msgs::UInt8MultiArray>("/rgb_leds",60);
-	this->reset_pose_pub = n.advertise<geometry_msgs::Pose2D>("/initial_pose",10);
+	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom",10 );
+    this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds",60);
+	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose",10);
 
-    current_time = ros::Time::now();
-  	last_time = ros::Time::now();
+    initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
+    velocityRobot.x = 0.1;
+    velocityRobot.y = 0.0;
+    velocityRobot.theta = 0.0;
 }
 
 /**
@@ -167,13 +236,15 @@ AmazebotController::AmazebotController()
  */
 void AmazebotController::run()
 {
+    current_time = ros::Time::now();
+  	last_time = ros::Time::now();
     // Send messages in a loop
-    
     ros::Rate loop_rate(10); // Update rate of 10Hz
     while (ros::ok()) 
     {
         current_time = ros::Time::now();	
-		double dt = (current_time - last_time).toSec();
+		
+        this->odometryHelper();
 
         // Calculate the command to apply
         auto msg = calculateCommand();
@@ -182,6 +253,7 @@ void AmazebotController::run()
         this->cmd_vel_pub.publish(msg);
 
 
+        this->initialPose();
         last_time = current_time;
         ros::spinOnce();
 

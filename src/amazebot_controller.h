@@ -28,35 +28,47 @@
 
 #define THRESHOLD_DISTANCE 0.3
 
+typedef struct {
+    float x, y, theta;
+} Pose;
+
+typedef struct {
+    float x, y, theta;
+} Velocity;
 
 class AmazebotController {
 
 private:
-
     ros::NodeHandle node_handle;
+    tf::TransformBroadcaster odom_broadcaster;
     ros::Publisher cmd_vel_pub;
     
     //Subscribers
+    ros::Subscriber laser_sub;
 	ros::Subscriber pose_sub;
 	ros::Subscriber front_distance_sub;
 	ros::Subscriber right_distance_sub;
 	ros::Subscriber left_distance_sub;
 
-
 	//Publishers
 	ros::Publisher odom_pub;
     ros::Publisher rgb_leds_pub;
-	ros::Publisher reset_pose_pub;
-
+	ros::Publisher initial_pose_pub;
 
     // Message initialization
     nav_msgs::Odometry odom_msg;
 	sensor_msgs::Range ir_front_msg, ir_left_msg, ir_right_msg;
     std_msgs::UInt8MultiArray rgb_leds_msg;
-	geometry_msgs::Pose2D reset_pose_msg;	
+	geometry_msgs::Pose2D initial_pose_msg;	
 	ros::Time current_time, last_time;
 
+    
+    // Transform Helpers
+    Pose initialPoseRobot;
+    Pose poseRobot;
+    Velocity velocityRobot;
 
+    // Sensor Data
     float left_distance;
     float front_distance;
     float right_distance;
@@ -81,9 +93,9 @@ private:
 
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs);
-    void front_distance_callback(const std_msgs::Float32& front_distance_msgs);
-    void left_distance_callback(const std_msgs::Float32& left_distance_msgs);
-    void right_distance_callback(const std_msgs::Float32& right_distance_msgs);
+    void frontDistanceCallback(const std_msgs::Float32& front_distance_msgs);
+    void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
+    void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
 
     float calculateGain(float value);
     void calculateRobotLost();
@@ -91,6 +103,8 @@ private:
 public:
 
     AmazebotController();
+    void odometryHelper();
+    void initialPose();
     void run();
 
 };
