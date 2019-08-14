@@ -213,16 +213,16 @@ AmazebotController::AmazebotController()
 
     //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
-	this->pose_sub = node_handle.subscribe("/pose", 10, poseCallback);
-	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, frontDistanceCallback);
-	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, rightDistanceCallback);
-	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, leftDistanceCallback);
+	this->pose_sub = node_handle.subscribe("/pose", 10, poseCallback, this);
+	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, frontDistanceCallback, this);
+	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, rightDistanceCallback, this);
+	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
-	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom",10 );
-    this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds",60);
-	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose",10);
+	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom", 10);
+    this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
+	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
 
     initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
     velocityRobot.x = 0.1;

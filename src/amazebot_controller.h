@@ -94,8 +94,8 @@ private:
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs);
     void frontDistanceCallback(const std_msgs::Float32& front_distance_msgs);
-    void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
     void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
+    void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
 
     float calculateGain(float value);
     void calculateRobotLost();
