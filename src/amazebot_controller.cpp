@@ -176,7 +176,7 @@ void AmazebotController::odometryHelper()
     // Sending the transform
     odom_broadcaster.sendTransform(odom_trans);
 
-    // Seting new pose
+    // Setting new pose
 	odom_msg.header.stamp = current_time;
 	odom_msg.header.frame_id = "odom";
 	odom_msg.pose.pose.position.x = poseRobot.x;
@@ -216,6 +216,15 @@ AmazebotController::AmazebotController()
     // Initialize ROS
     this->node_handle = ros::NodeHandle();
 
+    Led1_R = Led2_R = 0;
+    Led1_G = Led2_G = 150;
+    Led1_B = Led2_B = 100;
+
+    initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
+    velocityRobot.x = 0.1;
+    velocityRobot.y = 0.0;
+    velocityRobot.theta = 0.0;
+
     //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
 	this->pose_sub = node_handle.subscribe("/pose", 10, &AmazebotController::poseCallback, this);
@@ -228,11 +237,54 @@ AmazebotController::AmazebotController()
 	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom", 10);
     this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
 	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
+	this->ir_front_pub = node_handle.advertise<sensor_msgs::Range>("/ir_front_sensor",10);
+	this->ir_left_pub  = node_handle.advertise<sensor_msgs::Range>("/ir_left_sensor",10);
+    this->ir_right_pub = node_handle.advertise<sensor_msgs::Range>("/ir_right_sensor",10);
 
-    initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
-    velocityRobot.x = 0.1;
-    velocityRobot.y = 0.0;
-    velocityRobot.theta = 0.0;
+}
+
+void AmazebotController::sensorHelper() 
+{
+    		//publish front distance sensor
+		ir_front_msg.header.stamp = ros::Time::now();
+		ir_front_msg.header.frame_id = "front_ir";
+		ir_front_msg.radiation_type = 1,                    
+		ir_front_msg.field_of_view = 0.034906585;
+		ir_front_msg.min_range = 0.1;
+		ir_front_msg.max_range = 0.8;
+		ir_front_msg.range = frontIR;
+		ir_front_pub.publish(ir_front_msg);	
+		
+		//publish left distance sensor
+		ir_left_msg.header.stamp = ros::Time::now();
+		ir_left_msg.header.frame_id = "left_ir";
+		ir_left_msg.radiation_type = 1,                    
+		ir_left_msg.field_of_view = 0.034906585;
+		ir_left_msg.min_range = 0.1;
+		ir_left_msg.max_range = 0.8;
+		ir_left_msg.range = leftIR;
+		ir_left_pub.publish(ir_left_msg);
+		
+		//publish right distance sensor
+		ir_right_msg.header.stamp = ros::Time::now();
+		ir_right_msg.header.frame_id = "right_ir";
+		ir_right_msg.radiation_type = 1,                    
+		ir_right_msg.field_of_view = 0.034906585;
+		ir_right_msg.min_range = 0.1;
+		ir_right_msg.max_range = 0.8;
+		ir_right_msg.range = rightIR;
+		ir_right_pub.publish(ir_right_msg);				
+
+		//publish rgb led data
+		rgb_leds_msg.data.clear();
+		rgb_leds_msg.data.push_back(Led1_R);
+		rgb_leds_msg.data.push_back(Led1_G);
+		rgb_leds_msg.data.push_back(Led1_B);
+		rgb_leds_msg.data.push_back(Led2_R);
+		rgb_leds_msg.data.push_back(Led2_G);
+		rgb_leds_msg.data.push_back(Led2_B);
+
+		rgb_leds_pub.publish(rgb_leds_msg);	
 }
 
 /**

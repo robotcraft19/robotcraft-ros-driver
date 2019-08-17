@@ -54,6 +54,9 @@ private:
 	ros::Publisher odom_pub;
     ros::Publisher rgb_leds_pub;
 	ros::Publisher initial_pose_pub;
+    ros::Publisher ir_front_pub;
+    ros::Publisher ir_right_pub;
+    ros::Publisher ir_left_pub;
 
     // Message initialization
     nav_msgs::Odometry odom_msg;
@@ -74,6 +77,9 @@ private:
     float right_distance;
 
     float leftIR, frontIR, rightIR;
+
+    int Led1_R, Led1_G, Led1_B;
+    int Led2_R, Led2_G, Led2_B;
 
     // PID control
     float old_prop_error;
@@ -104,6 +110,7 @@ public:
 
     AmazebotController();
     void odometryHelper();
+    void sensorHelper();
     void initialPose();
     void run();
 
