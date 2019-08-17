@@ -19,7 +19,7 @@ float AmazebotController::radToDeg(float angle)
     return(rad);
 }
 
-float AmazebotController::distHelper(float x1, float x2, float y1, float y2)
+float AmazebotController::calcDistance(float x1, float x2, float y1, float y2)
 {
     return(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))) * 100;
 }
@@ -30,7 +30,7 @@ void AmazebotController::moveForward(float distance)
     msg.linear.x = 0.1;
     float start_x = poseRobot.x;
     float start_y = poseRobot.y;
-    while ((distance - 0.5) - distHelper(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1)
+    while ((distance - 0.5) - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1)
     {
         cmd_vel_pub.publish(msg);
         //sleep ?

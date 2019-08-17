@@ -119,7 +119,7 @@ public:
 
     AmazebotController();
     float radToDeg(float angle);
-    float distHelper(float x1, float x2, float y1, float y2);
+    float calcDistance(float x1, float x2, float y1, float y2);
     void run();
     void square_test();
 
