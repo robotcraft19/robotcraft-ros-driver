@@ -13,6 +13,48 @@
 
 #include "amazebot_controller.h"
 
+float AmazebotController::radToDeg(float angle)
+{
+    float rad = angle * M_PI/180;
+    return(rad);
+}
+
+float AmazebotController::distHelper(float x1, float x2, float y1, float y2)
+{
+    return(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))) * 100;
+}
+
+void AmazebotController::moveForward(float distance)
+{
+    auto msg = geometry_msgs::Twist();
+    msg.linear.x = 0.1;
+    float start_x = poseRobot.x;
+    float start_y = poseRobot.y;
+    while ((distance - 0.5) - distHelper(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1)
+    {
+        cmd_vel_pub.publish(msg);
+        //sleep ?
+    }
+
+    //stop the robot here
+}
+
+void AmazebotController::moveBackwards(float distance)
+{
+    auto msg = geometry_msgs::Twist();
+    msg.linear.x = -0.1;
+}
+
+void AmazebotController::turnLeft(float angle)
+{
+    auto msg = geometry_msgs::Twist(); 
+}
+
+void AmazebotController::turnRight(float angle)
+{
+    auto msg = geometry_msgs::Twist();
+}
+
 /**
  * @brief Calculates controller commands and returns message of type Twist
  * 
@@ -245,47 +287,77 @@ AmazebotController::AmazebotController()
 
 void AmazebotController::sensorHelper() 
 {
-    		//publish front distance sensor
-		ir_front_msg.header.stamp = ros::Time::now();
-		ir_front_msg.header.frame_id = "front_ir";
-		ir_front_msg.radiation_type = 1,                    
-		ir_front_msg.field_of_view = 0.034906585;
-		ir_front_msg.min_range = 0.1;
-		ir_front_msg.max_range = 0.8;
-		ir_front_msg.range = frontIR;
-		ir_front_pub.publish(ir_front_msg);	
-		
-		//publish left distance sensor
-		ir_left_msg.header.stamp = ros::Time::now();
-		ir_left_msg.header.frame_id = "left_ir";
-		ir_left_msg.radiation_type = 1,                    
-		ir_left_msg.field_of_view = 0.034906585;
-		ir_left_msg.min_range = 0.1;
-		ir_left_msg.max_range = 0.8;
-		ir_left_msg.range = leftIR;
-		ir_left_pub.publish(ir_left_msg);
-		
-		//publish right distance sensor
-		ir_right_msg.header.stamp = ros::Time::now();
-		ir_right_msg.header.frame_id = "right_ir";
-		ir_right_msg.radiation_type = 1,                    
-		ir_right_msg.field_of_view = 0.034906585;
-		ir_right_msg.min_range = 0.1;
-		ir_right_msg.max_range = 0.8;
-		ir_right_msg.range = rightIR;
-		ir_right_pub.publish(ir_right_msg);				
+    //publish front distance sensor
+	ir_front_msg.header.stamp = ros::Time::now();
+	ir_front_msg.header.frame_id = "front_ir";
+	ir_front_msg.radiation_type = 1,                    
+	ir_front_msg.field_of_view = 0.034906585;
+	ir_front_msg.min_range = 0.1;
+	ir_front_msg.max_range = 0.8;
+	ir_front_msg.range = frontIR;
+	ir_front_pub.publish(ir_front_msg);	
+	
+	//publish left distance sensor
+	ir_left_msg.header.stamp = ros::Time::now();
+	ir_left_msg.header.frame_id = "left_ir";
+	ir_left_msg.radiation_type = 1,                    
+	ir_left_msg.field_of_view = 0.034906585;
+	ir_left_msg.min_range = 0.1;
+	ir_left_msg.max_range = 0.8;
+	ir_left_msg.range = leftIR;
+	ir_left_pub.publish(ir_left_msg);
+	
+	//publish right distance sensor
+	ir_right_msg.header.stamp = ros::Time::now();
+	ir_right_msg.header.frame_id = "right_ir";
+	ir_right_msg.radiation_type = 1,                    
+	ir_right_msg.field_of_view = 0.034906585;
+	ir_right_msg.min_range = 0.1;
+	ir_right_msg.max_range = 0.8;
+	ir_right_msg.range = rightIR;
+	ir_right_pub.publish(ir_right_msg);				
 
-		//publish rgb led data
-		rgb_leds_msg.data.clear();
-		rgb_leds_msg.data.push_back(Led1_R);
-		rgb_leds_msg.data.push_back(Led1_G);
-		rgb_leds_msg.data.push_back(Led1_B);
-		rgb_leds_msg.data.push_back(Led2_R);
-		rgb_leds_msg.data.push_back(Led2_G);
-		rgb_leds_msg.data.push_back(Led2_B);
-
-		rgb_leds_pub.publish(rgb_leds_msg);	
+	//publish rgb led data
+	rgb_leds_msg.data.clear();
+    rgb_leds_msg.data.push_back(Led1_R);
+	rgb_leds_msg.data.push_back(Led1_G);
+	rgb_leds_msg.data.push_back(Led1_B);
+	rgb_leds_msg.data.push_back(Led2_R);
+	rgb_leds_msg.data.push_back(Led2_G);
+	rgb_leds_msg.data.push_back(Led2_B);
+	rgb_leds_pub.publish(rgb_leds_msg);	
 }
+
+void AmazebotController::square_test()
+{
+    current_time = ros::Time::now();
+  	last_time = ros::Time::now();
+    // Send messages in a loop
+    ros::Rate loop_rate(10); // Update rate of 10Hz
+    while (ros::ok()) 
+    {
+        current_time = ros::Time::now();	
+		
+        this->odometryHelper();
+        this->sensorHelper();
+
+        // Calculate the command to apply
+        auto msg = geometry_msgs::Twist();
+        while 
+
+        // Publish the new command
+        this->cmd_vel_pub.publish(msg);
+
+
+        this->initialPose();
+        last_time = current_time;
+        ros::spinOnce();
+
+        // And throttle the loop
+        loop_rate.sleep();
+    }
+}
+
 
 /**
  * @brief Run ROS

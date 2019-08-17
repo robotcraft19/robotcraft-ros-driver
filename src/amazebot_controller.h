@@ -103,16 +103,25 @@ private:
     void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
     void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
 
+    void odometryHelper();
+    void sensorHelper();
+    void initialPose();
+
+    void moveForward(float distance);
+    void moveBackwards(float distance);
+    void turnLeft(float angle);
+    void turnRight(float angle);
+
     float calculateGain(float value);
     void calculateRobotLost();
 
 public:
 
     AmazebotController();
-    void odometryHelper();
-    void sensorHelper();
-    void initialPose();
+    float radToDeg(float angle);
+    float distHelper(float x1, float x2, float y1, float y2);
     void run();
+    void square_test();
 
 };
 
