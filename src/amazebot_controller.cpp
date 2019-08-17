@@ -4,7 +4,7 @@
  *         Oleksandr Koreiba<alex@koreiba.com>, Jan Tiepelt, 
  *         Giovanni Alexander Bergamaschi
  * @brief Amazebot Controller Class
- * @version 0.1
+ * @version 0.2
  * @date 2019-08-11
  * 
  * @copyright Copyright (c) 2019
@@ -24,7 +24,7 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
 
     auto msg = geometry_msgs::Twist();
         
-    if (front_distance < THRESHOLD_DISTANCE) 
+    if (frontIR < THRESHOLD_DISTANCE) 
     {
         // Prevent robot from crashing
         msg.angular.z = 1.0;
@@ -38,7 +38,7 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
     else 
     {
         // Robot keeps using normal PID controller
-        float gain = calculateGain(right_distance);
+        float gain = calculateGain(rightIR);
         msg.linear.x = 0.5;
         msg.angular.z = gain;
     }
@@ -132,14 +132,14 @@ float AmazebotController::calculateGain(float value)
 void AmazebotController::calculateRobotLost() 
 {
     // Calculations needed to check if robot is lost
-    if (front_distance > THRESHOLD_DISTANCE && right_distance > THRESHOLD_DISTANCE 
-        && left_distance > THRESHOLD_DISTANCE) 
+    if (frontIR > THRESHOLD_DISTANCE && rightIR > THRESHOLD_DISTANCE 
+        && leftIR > THRESHOLD_DISTANCE) 
     {
             ++lost_counter;
 
             if (lost_counter >= 75) robot_lost = true;
     } 
-    else if(front_distance < THRESHOLD_DISTANCE || right_distance < THRESHOLD_DISTANCE) 
+    else if(frontIR < THRESHOLD_DISTANCE || rightIR < THRESHOLD_DISTANCE) 
     {
             robot_lost = false;
             lost_counter = 0;
@@ -302,6 +302,7 @@ void AmazebotController::run()
         current_time = ros::Time::now();	
 		
         this->odometryHelper();
+        this->sensorHelper();
 
         // Calculate the command to apply
         auto msg = calculateCommand();
