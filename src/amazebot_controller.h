@@ -41,7 +41,9 @@ class AmazebotController {
 private:
     ros::NodeHandle node_handle;
     tf::TransformBroadcaster odom_broadcaster;
-    ros::Publisher cmd_vel_pub;
+    
+
+    ros::Rate loop_rate;
     
     //Subscribers
     ros::Subscriber laser_sub;
@@ -51,6 +53,7 @@ private:
 	ros::Subscriber left_distance_sub;
 
 	//Publishers
+    ros::Publisher cmd_vel_pub;
 	ros::Publisher odom_pub;
     ros::Publisher rgb_leds_pub;
 	ros::Publisher initial_pose_pub;
@@ -109,8 +112,9 @@ private:
 
     void moveForward(float distance);
     void moveBackwards(float distance);
-    void turnLeft(float angle);
-    void turnRight(float angle);
+    void turnLeft(int angle);
+    void turnRight(int angle);
+    void stopRobot();
 
     float calculateGain(float value);
     void calculateRobotLost();
@@ -118,7 +122,8 @@ private:
 public:
 
     AmazebotController();
-    float radToDeg(float angle);
+    float degToRad(int angle);
+    int radToDeg(float angle);
     float calcDistance(float x1, float x2, float y1, float y2);
     void run();
     void square_test();
