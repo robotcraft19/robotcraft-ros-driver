@@ -41,7 +41,6 @@ class AmazebotController {
 private:
     ros::NodeHandle node_handle;
     tf::TransformBroadcaster odom_broadcaster;
-    
 
     ros::Rate loop_rate;
     

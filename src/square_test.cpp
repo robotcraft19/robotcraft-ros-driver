@@ -17,8 +17,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "amazebot_controller");
 
     // Create our controller object and run it
-    auto controller = AmazebotController();
-    controller.square_test();
+    auto square = AmazebotController();
+    square.square_test();
 
     // And make good on our promise
     return 0;

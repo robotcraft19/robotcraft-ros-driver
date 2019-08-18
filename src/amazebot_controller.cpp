@@ -49,12 +49,12 @@ void AmazebotController::moveForward(float distance)
         cmd_vel_pub.publish(msg);
         if (frontIR < 0.15) 
         {
-          ROS_WARN("Warning : Obstacle at %f meters detected by front sensor", frontIR);
-          if (frontIR < 0.1) 
-          {
-              this->stopRobot();
-              this->loop_rate.sleep();
-          }
+            ROS_WARN("Warning : Obstacle at %f meters detected by front sensor", frontIR);
+            if (frontIR < 0.1) 
+            {
+                this->stopRobot();
+                this->loop_rate.sleep();
+            }
         }
     }
     this->stopRobot();
@@ -338,12 +338,10 @@ void AmazebotController::initialPose()
  * @brief Construct a new Robot Controller:: Robot Controller object
  * 
  */
-AmazebotController::AmazebotController() 
+AmazebotController::AmazebotController() : loop_rate(10)
 {
     // Initialize ROS
     this->node_handle = ros::NodeHandle();
-    this->loop_rate = ros::Rate(10);
-
 
     Led1_R = Led2_R = 0;
     Led1_G = Led2_G = 150;
@@ -419,7 +417,7 @@ void AmazebotController::square_test()
 {
     current_time = ros::Time::now();
   	last_time = ros::Time::now();
-    // Send messages in a loop
+    // Send messages in a this->loop
     while (ros::ok()) 
     {
         current_time = ros::Time::now();	
@@ -441,8 +439,8 @@ void AmazebotController::square_test()
         last_time = current_time;
         ros::spinOnce();
 
-        // And throttle the loop
-        loop_rate.sleep();
+        // And throttle the this->loop
+        this->loop_rate.sleep();
     }
 }
 
@@ -455,7 +453,7 @@ void AmazebotController::run()
 {
     current_time = ros::Time::now();
   	last_time = ros::Time::now();
-    // Send messages in a loop
+    // Send messages in a this->loop
     while (ros::ok()) 
     {
         current_time = ros::Time::now();	
@@ -474,7 +472,7 @@ void AmazebotController::run()
         last_time = current_time;
         ros::spinOnce();
 
-        // And throttle the loop
-        loop_rate.sleep();
+        // And throttle the this->loop
+        this->loop_rate.sleep();
     }
 }
