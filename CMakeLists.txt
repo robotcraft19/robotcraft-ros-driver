@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   stage_ros
   std_msgs
   tf
+  urdf
 )
 
 catkin_package(
