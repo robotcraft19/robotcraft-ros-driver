@@ -38,35 +38,13 @@ void AmazebotController::stopRobot()
     cmd_vel_pub.publish(msg);
 }
 
-void AmazebotController::moveForward(float distance)
+void AmazebotController::moveForward(float distance, float speed)
 {
     auto msg = geometry_msgs::Twist();
-    msg.linear.x = 0.3;
-    float start_x = poseRobot.x;
-    float start_y = poseRobot.y;
-    while ((distance - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1) && (ros::ok))
-    {
-        cmd_vel_pub.publish(msg);
-        /*if (frontIR < 0.15) 
-        {
-            ROS_WARN("Warning : Obstacle at %f meters detected by front sensor", frontIR);
-            if (frontIR < 0.1) 
-            {
-                this->stopRobot();
-                this->loop_rate.sleep();
-            }
-        }*/
-    }
-    this->stopRobot();
-}
-
-void AmazebotController::moveBackwards(float distance)
-{
-    auto msg = geometry_msgs::Twist();
-    msg.linear.x = -0.3;
-    float start_x = poseRobot.x;
-    float start_y = poseRobot.y;
-    while (((distance - 0.5) - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1) && (ros::ok))
+    msg.linear.x = speed;
+    std::size_t rosloop = 0;
+    float deltaT = distance/speed;
+    while (rosloop < (deltaT/(1/ROSRATE)))
     {
         cmd_vel_pub.publish(msg);
         this->loop_rate.sleep();
@@ -74,7 +52,21 @@ void AmazebotController::moveBackwards(float distance)
     this->stopRobot();
 }
 
-void AmazebotController::turnLeft(int angle)
+void AmazebotController::moveBackwards(float distance, float speed)
+{
+    auto msg = geometry_msgs::Twist();
+    msg.linear.x = -speed;
+    std::size_t rosloop = 0;
+    float deltaT = distance/speed;
+    while (rosloop < (deltaT/(1/ROSRATE)))
+    {
+        cmd_vel_pub.publish(msg);
+        this->loop_rate.sleep();
+    }
+    this->stopRobot();
+}
+
+void AmazebotController::turnLeft(int angle, float speed)
 {
     auto msg = geometry_msgs::Twist();
     msg.angular.z = degToRad(angle / 4);
@@ -107,7 +99,7 @@ void AmazebotController::turnLeft(int angle)
     this->stopRobot();
 }
 
-void AmazebotController::turnRight(int angle)
+void AmazebotController::turnRight(int angle, float speed)
 {
     auto msg = geometry_msgs::Twist();
     msg.angular.z = -degToRad(angle / 4);
@@ -338,7 +330,7 @@ void AmazebotController::initialPose()
  * @brief Construct a new Robot Controller:: Robot Controller object
  * 
  */
-AmazebotController::AmazebotController() : loop_rate(10)
+AmazebotController::AmazebotController() : loop_rate(ROSRATE)
 {
     // Initialize ROS
     this->node_handle = ros::NodeHandle();

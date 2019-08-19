@@ -27,6 +27,7 @@
 #include "std_msgs/UInt8MultiArray.h"
 
 #define THRESHOLD_DISTANCE 0.15
+#define ROSRATE            10
 
 typedef struct {
     float x, y, theta;
@@ -109,10 +110,10 @@ private:
     void sensorHelper();
     void initialPose();
 
-    void moveForward(float distance);
-    void moveBackwards(float distance);
-    void turnLeft(int angle);
-    void turnRight(int angle);
+    void moveForward(float distance, float speed);
+    void moveBackwards(float distance, float speed);
+    void turnLeft(int angle, float speed);
+    void turnRight(int angle, float speed);
 
     float calculateGain(float value);
     void calculateRobotLost();
