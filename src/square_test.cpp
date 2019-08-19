@@ -9,17 +9,14 @@
  * 
  */
 
-#include "amazebot_controller.h"
+#include "square_controller.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     // Initialize ROS
-    ros::init(argc, argv, "square_test");
+    ros::init(argc, argv, "SquareController");
 
-    // Create our controller object and run it
-    auto square = AmazebotController();
-    square.square_test();
-
-    // And make good on our promise
+    auto controller = SquareController();
+    controller.run();
+    
     return 0;
 }

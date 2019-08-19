@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   stage_ros
   std_msgs
   tf
-  urdf
 )
 
 catkin_package(
@@ -21,6 +20,6 @@ include_directories(
 )
 
 add_executable(amazebot src/amazebot.cpp src/amazebot_controller.cpp)
-add_executable(square_test src/square_test.cpp src/amazebot_controller.cpp)
+add_executable(square_test src/square_test.cpp src/square_controller.cpp)
 target_link_libraries(amazebot ${catkin_LIBRARIES})
 target_link_libraries(square_test ${catkin_LIBRARIES})
