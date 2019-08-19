@@ -384,7 +384,7 @@ void AmazebotController::square_test()
     {
         current_time = ros::Time::now();	
 		
-        this->odometryHelper();
+        //this->odometryHelper();
         this->sensorHelper();
 
         this->moveForward(6, 0.3);
