@@ -41,13 +41,13 @@ void AmazebotController::stopRobot()
 void AmazebotController::moveForward(float distance)
 {
     auto msg = geometry_msgs::Twist();
-    msg.linear.x = 0.1;
+    msg.linear.x = 0.3;
     float start_x = poseRobot.x;
     float start_y = poseRobot.y;
-    while (((distance - 0.5) - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1) && (ros::ok))
+    while ((distance - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1) && (ros::ok))
     {
         cmd_vel_pub.publish(msg);
-        if (frontIR < 0.15) 
+        /*if (frontIR < 0.15) 
         {
             ROS_WARN("Warning : Obstacle at %f meters detected by front sensor", frontIR);
             if (frontIR < 0.1) 
@@ -55,7 +55,7 @@ void AmazebotController::moveForward(float distance)
                 this->stopRobot();
                 this->loop_rate.sleep();
             }
-        }
+        }*/
     }
     this->stopRobot();
 }
@@ -63,7 +63,7 @@ void AmazebotController::moveForward(float distance)
 void AmazebotController::moveBackwards(float distance)
 {
     auto msg = geometry_msgs::Twist();
-    msg.linear.x = -0.1;
+    msg.linear.x = -0.3;
     float start_x = poseRobot.x;
     float start_y = poseRobot.y;
     while (((distance - 0.5) - calcDistance(poseRobot.x, start_x, poseRobot.y, start_y) > 0.1) && (ros::ok))
@@ -78,26 +78,26 @@ void AmazebotController::turnLeft(int angle)
 {
     auto msg = geometry_msgs::Twist();
     msg.angular.z = degToRad(angle / 4);
-    float start_angle = poseRobot.theta;
-    float end_angle = fmod((start_angle + angle), (2 * M_PI));
-    if ( poseRobot.theta < end_angle) 
+    int start_angle = radToDeg(poseRobot.theta);
+    int end_angle = (start_angle + angle) % 360;
+    if ( radToDeg(poseRobot.theta) < end_angle) 
     {
-        while (poseRobot.theta < end_angle && ros::ok)
+        while (radToDeg(poseRobot.theta) < end_angle && ros::ok)
         {
             cmd_vel_pub.publish(msg);
             this->loop_rate.sleep();
         }
     } 
     
-    else if (poseRobot.theta > end_angle)
+    else if (radToDeg(poseRobot.theta) > end_angle)
     {
-        while (poseRobot.theta > 0 && ros::ok && poseRobot.theta > end_angle)
+        while (radToDeg(poseRobot.theta) > 0 && ros::ok && radToDeg(poseRobot.theta) > end_angle)
         {
             cmd_vel_pub.publish(msg);
             this->loop_rate.sleep();
         }
 
-        while (poseRobot.theta < end_angle && ros::ok)
+        while (radToDeg(poseRobot.theta) < end_angle && ros::ok)
         {
             cmd_vel_pub.publish(msg);
             this->loop_rate.sleep();
@@ -348,7 +348,7 @@ AmazebotController::AmazebotController() : loop_rate(10)
     Led1_B = Led2_B = 100;
 
     initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
-    velocityRobot.x = 0.1;
+    velocityRobot.x = 0.0;
     velocityRobot.y = 0.0;
     velocityRobot.theta = 0.0;
 
@@ -360,7 +360,7 @@ AmazebotController::AmazebotController() : loop_rate(10)
 	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
-    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("cmd_vel", 5);
+    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
 	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom", 10);
     this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
 	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
@@ -417,31 +417,23 @@ void AmazebotController::square_test()
 {
     current_time = ros::Time::now();
   	last_time = ros::Time::now();
-    // Send messages in a this->loop
-    while (ros::ok()) 
-    {
-        current_time = ros::Time::now();	
-		
-        this->odometryHelper();
-        this->sensorHelper();
+    // Send messages in a this->loop	
+    //this->odometryHelper();
+    //this->sensorHelper();
 
-        // Calculate the command to apply
-        this->moveForward(0.5);
-        this->turnRight(90);
-        this->moveForward(0.5);
-        this->turnRight(90);
-        this->moveForward(0.5);
-        this->turnRight(90);
-        this->moveForward(0.5);
-        this->turnRight(90);
+    // Calculate the command to apply
+    this->turnLeft(90);
+    this->moveForward(0.5);
+    this->turnRight(90);
+    this->moveForward(0.5);
+    this->turnRight(90);
+    this->moveForward(0.5);
+    this->turnRight(90);
+    this->moveForward(0.5);
+    this->turnRight(90);
 
-        this->initialPose();
-        last_time = current_time;
-        ros::spinOnce();
-
-        // And throttle the this->loop
-        this->loop_rate.sleep();
-    }
+    last_time = current_time;
+    ros::spinOnce();
 }
 
 

@@ -26,7 +26,7 @@
 #include "sensor_msgs/Range.h"
 #include "std_msgs/UInt8MultiArray.h"
 
-#define THRESHOLD_DISTANCE 0.3
+#define THRESHOLD_DISTANCE 0.15
 
 typedef struct {
     float x, y, theta;
@@ -113,7 +113,6 @@ private:
     void moveBackwards(float distance);
     void turnLeft(int angle);
     void turnRight(int angle);
-    void stopRobot();
 
     float calculateGain(float value);
     void calculateRobotLost();
@@ -124,6 +123,7 @@ public:
     float degToRad(int angle);
     int radToDeg(float angle);
     float calcDistance(float x1, float x2, float y1, float y2);
+    void stopRobot();
     void run();
     void square_test();
 

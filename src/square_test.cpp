@@ -14,7 +14,7 @@
 int main(int argc, char **argv)
 {
     // Initialize ROS
-    ros::init(argc, argv, "amazebot_controller");
+    ros::init(argc, argv, "square_test");
 
     // Create our controller object and run it
     auto square = AmazebotController();
