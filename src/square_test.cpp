@@ -11,6 +11,8 @@
 
 #include "amazebot_controller.h"
 
+// Hey; this is the former master code
+
 int main(int argc, char **argv)
 {
     // Initialize ROS
