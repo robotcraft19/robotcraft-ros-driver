@@ -59,7 +59,7 @@ geometry_msgs::Twist SquareController::calculateCommand(float squareSize)
     // MIGHT JUST FIX IT OLOLO
     switch(rotation) 
     {
-        case(0):
+        case(0): // No rotation
             if(distance < squareSize) 
             {
                 msg.linear.x = 1.0;
@@ -73,11 +73,11 @@ geometry_msgs::Twist SquareController::calculateCommand(float squareSize)
             }
             break;
 
-        case(1):
+        case(1): // Calculate Rotation
             if (InitPose.theta < (M_PI/2))
             {
-                    target_angle1 = InitPose.theta + (M_PI/2);
-            target_angle2 = -InitPose.theta + (M_PI/2);
+                target_angle1 = InitPose.theta + (M_PI/2);
+                target_angle2 = -InitPose.theta + (M_PI/2);
             }
             else
             {
@@ -87,7 +87,7 @@ geometry_msgs::Twist SquareController::calculateCommand(float squareSize)
             rotation = 2;
             break;
         
-        case(2):
+        case(2): // Rotate
             if (rotation == 2 && (abs(currentAngle - target_angle2) > 0.1 && abs(currentAngle - target_angle1) > 0.1))
             {
                 msg.angular.z = -0.60;

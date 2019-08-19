@@ -9,13 +9,12 @@
 #include <tf/transform_broadcaster.h>
 
 
-class RobotController
+class RobotDriver
 {
 private:
     ros::NodeHandle n;
 
     // Publishers
-    ros::Publisher cmd_vel_pub;
     ros::Publisher odom_pub;
     ros::Publisher left_ir_pub;
     ros::Publisher front_ir_pub;
@@ -25,26 +24,14 @@ private:
     tf::TransformBroadcaster odom_broadcaster;
 
     // Subscribers
-    ros::Subscriber pose_sub;
+    ros::Subscriber pose_sub; // Get pose of robot
+    ros::Subscriber cmd_vel_sub; // Get velocity of robot
     ros::Subscriber ir_left_sub;
     ros::Subscriber ir_front_sub;
     ros::Subscriber ir_right_sub;
 
-    // Variables
-    float left_ir, front_ir, right_ir;
+    // Velocity variables received from cmd_vel topic and published to odom
     float linear_vel, angular_vel;
-
-
-    geometry_msgs::Twist calculateCommand()
-    {
-        auto msg = geometry_msgs::Twist();
-        
-        // TODO: Control code goes here
-        msg.linear.x = linear_vel; // move forward (m/s -> unit of measure convention)
-        msg.angular.z = angular_vel; // turn counterclockwise (rad/s -> unit of measure convention)
-
-        return msg;
-    }
 
     void poseCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
     {
@@ -92,11 +79,16 @@ private:
         this->odom_pub.publish(odom);
     }
 
+    void velocityCallback(const geometry_msgs::Twist::ConstPtr& msg)
+    {
+        // Receive speed of robot
+        this->linear_vel = msg->linear.x;
+        this->angular_vel = msg->angular.z;
+    }
+
+
     void leftIRCallback(const std_msgs::Float32::ConstPtr& msg)
     {
-        // Save left IR distance and republish
-        this->left_ir = msg->data;
-
         // Publish left distance sensor
         auto ir_msg = sensor_msgs::Range();
         ir_msg.header.stamp = ros::Time::now();
@@ -105,14 +97,11 @@ private:
         ir_msg.field_of_view = 0.034906585;
         ir_msg.min_range = 0.1;
         ir_msg.max_range = 0.8;
-        ir_msg.range = this->left_ir;
+        ir_msg.range = msg->data;;
         this->left_ir_pub.publish(ir_msg); 
     }
     void frontIRCallback(const std_msgs::Float32::ConstPtr& msg)
     {
-        // Save front IR distance and republish
-        this->front_ir = msg->data;
-
         // Publish front distance sensor
         auto ir_msg = sensor_msgs::Range();
         ir_msg.header.stamp = ros::Time::now();
@@ -121,14 +110,11 @@ private:
         ir_msg.field_of_view = 0.034906585;
         ir_msg.min_range = 0.1;
         ir_msg.max_range = 0.8;
-        ir_msg.range = this->front_ir;
+        ir_msg.range = msg->data;;
         this->front_ir_pub.publish(ir_msg); 
     }
     void rightIRCallback(const std_msgs::Float32::ConstPtr& msg)
     {
-        // Save right IR distance and republish
-        this->right_ir = msg->data;
-
         // Publish front distance sensor
         auto ir_msg = sensor_msgs::Range();
         ir_msg.header.stamp = ros::Time::now();
@@ -137,27 +123,27 @@ private:
         ir_msg.field_of_view = 0.034906585;
         ir_msg.min_range = 0.1;
         ir_msg.max_range = 0.8;
-        ir_msg.range = this->right_ir;
+        ir_msg.range = msg->data;;
         this->right_ir_pub.publish(ir_msg); 
     }
 
 public:
-    RobotController(){
+    RobotDriver(){
         // Initialize ROS
         this->n = ros::NodeHandle();
 
         // Setup publishers
-        this->cmd_vel_pub = this->n.advertise<geometry_msgs::Twist>("cmd_vel", 10); // size of queue
         this->odom_pub = this->n.advertise<nav_msgs::Odometry>("odom", 10);
         this->left_ir_pub = this->n.advertise<sensor_msgs::Range>("ir_left_sensor", 10);
         this->front_ir_pub = this->n.advertise<sensor_msgs::Range>("ir_front_sensor", 10);
         this->right_ir_pub = this->n.advertise<sensor_msgs::Range>("ir_right_sensor", 10);
 
         // Setup subscribers
-        this->pose_sub = this->n.subscribe("pose", 10, &RobotController::poseCallback, this);
-        this->ir_left_sub = this->n.subscribe("left_distance", 10, &RobotController::leftIRCallback, this);
-        this->ir_front_sub = this->n.subscribe("front_distance", 10, &RobotController::frontIRCallback, this);
-        this->ir_right_sub = this->n.subscribe("right_distance", 10, &RobotController::rightIRCallback, this);
+        this->pose_sub = this->n.subscribe("pose", 10, &RobotDriver::poseCallback, this);
+        this->cmd_vel_sub = this->n.subscribe("cmd_vel", 10, &RobotDriver::velocityCallback, this);
+        this->ir_left_sub = this->n.subscribe("left_distance", 10, &RobotDriver::leftIRCallback, this);
+        this->ir_front_sub = this->n.subscribe("front_distance", 10, &RobotDriver::frontIRCallback, this);
+        this->ir_right_sub = this->n.subscribe("right_distance", 10, &RobotDriver::rightIRCallback, this);
 
     }
 
@@ -166,11 +152,8 @@ public:
         ros::Rate loop_rate(10);
         while (ros::ok())
         {
-            // Calculate the command to apply
-            auto msg = calculateCommand();
-
-            // Publish the new command
-            this->cmd_vel_pub.publish(msg);
+            // Receive messages and publish inside callbacks
+            ros::spinOnce();
 
             // And throttle the loop
             loop_rate.sleep();
@@ -185,7 +168,7 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "talker");
 
     // Create our controller object and run it
-    auto controller = RobotController();
+    auto controller = RobotDriver();
     controller.run();
 
     // And make good on our promise
