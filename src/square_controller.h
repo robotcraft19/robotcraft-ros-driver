@@ -52,11 +52,13 @@ class SquareController
         Pose InitPose;
 
         float target_angle1, target_angle2;
+   
+   
         float leftIR, frontIR, rightIR;
 
         tf2::Quaternion q;
-        bool rotation;
-        geometry_msgs::Twist calculateCommand();
+        int rotation;
+        geometry_msgs::Twist calculateCommand(float squareSize);
         
         void frontSensorCallback(const std_msgs::Float32& msg);
         void rightSensorCallback(const std_msgs::Float32& msg);

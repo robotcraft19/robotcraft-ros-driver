@@ -48,49 +48,64 @@ float SquareController::calcDistance(float x1, float x2, float y1, float y2)
     return (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)));
 }
 
-geometry_msgs::Twist SquareController::calculateCommand()
+geometry_msgs::Twist SquareController::calculateCommand(float squareSize)
 {
     auto msg = geometry_msgs::Twist();
     float distance = calcDistance(InitPose.x, poseRobot.x, InitPose.y, poseRobot.y);
     float currentAngle = q.getAngle();
 
-    if (!rotation && distance < 4)
+    // Shittiest fucking way to code this ffs this terrible Imma go straight back to the other one cause damn this is a blasphemy
+    // PS : I think it doesnt work because I publish IN the function and not in calculateCommand that returns msg
+    // MIGHT JUST FIX IT OLOLO
+    switch(rotation) 
     {
-        msg.linear.x = 1.0;
-        msg.angular.z = 0.0;
-    }
-    else if (!rotation)
-    {
-        msg.linear.x = 0.0;
-        rotation = 1;
-        InitPose.theta = currentAngle;
-    }
-    if (rotation == 1)
-    {
-        if (InitPose.theta < (M_PI/2))
-        {
-            target_angle1 = InitPose.theta + (M_PI/2);
+        case(0):
+            if(distance < squareSize) 
+            {
+                msg.linear.x = 1.0;
+                msg.angular.z = 0.0;
+            } 
+            else 
+            {
+                msg.linear.x = 0.0;
+                rotation = 1;
+                InitPose.theta = currentAngle;
+            }
+            break;
+
+        case(1):
+            if (InitPose.theta < (M_PI/2))
+            {
+                    target_angle1 = InitPose.theta + (M_PI/2);
             target_angle2 = -InitPose.theta + (M_PI/2);
-        }
-        else
-        {
-            target_angle1 = M_PI - ((M_PI/2) - (M_PI - InitPose.theta));
-            target_angle2 = InitPose.theta - (M_PI/2);
-        }
-        rotation = 2;
+            }
+            else
+            {
+                target_angle1 = M_PI - ((M_PI/2) - (M_PI - InitPose.theta));
+                target_angle2 = InitPose.theta - (M_PI/2);
+            }
+            rotation = 2;
+            break;
+        
+        case(2):
+            if (rotation == 2 && (abs(currentAngle - target_angle2) > 0.1 && abs(currentAngle - target_angle1) > 0.1))
+            {
+                msg.angular.z = -0.60;
+                msg.linear.x = 0.0;
+            }
+            else 
+            {
+                msg.angular.z = 0.0;
+                rotation = 0;
+                InitPose.y = poseRobot.y;
+                InitPose.x = poseRobot.x;
+            }
+            break;
+
+        default: 
+            ROS_ERROR("You should not reach that statement !!!");
     }
-    else if (rotation == 2 && (abs(currentAngle - target_angle2) > 0.1 && abs(currentAngle - target_angle1) > 0.1))
-    {
-        msg.angular.z = -0.60;
-        msg.linear.x = 0.0;
-    }
-    else if (rotation == 2)
-    {
-        msg.angular.z = 0.0;
-        rotation = false;
-        InitPose.y = poseRobot.y;
-        InitPose.x = poseRobot.x;
-    }
+
     return msg;
 }
 
@@ -134,7 +149,7 @@ void SquareController::run()
     while (ros::ok())
     {
         // Calculate the command to apply
-        auto msg = calculateCommand();
+        auto msg = calculateCommand(4.0);
 
         cmd_vel_pub.publish(msg);
 
