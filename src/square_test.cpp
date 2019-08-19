@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     // Create our controller object and run it
     auto square = AmazebotController();
-    square.square_test();
+    square.run();
 
     // And make good on our promise
     return 0;

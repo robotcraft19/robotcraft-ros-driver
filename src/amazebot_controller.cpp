@@ -42,12 +42,14 @@ void AmazebotController::moveForward(float distance, float speed)
 {
     auto msg = geometry_msgs::Twist();
     msg.linear.x = speed;
+    msg.angular.z = 0.0;
     std::size_t rosloop = 0;
     float deltaT = distance/speed;
-    while (rosloop < (deltaT/(1/ROSRATE)))
+    while (rosloop < (deltaT/ROSPERIOD))
     {
         cmd_vel_pub.publish(msg);
         this->loop_rate.sleep();
+        ++rosloop;
     }
     this->stopRobot();
 }
@@ -56,12 +58,14 @@ void AmazebotController::moveBackwards(float distance, float speed)
 {
     auto msg = geometry_msgs::Twist();
     msg.linear.x = -speed;
+    msg.angular.z = 0.0;
     std::size_t rosloop = 0;
     float deltaT = distance/speed;
-    while (rosloop < (deltaT/(1/ROSRATE)))
+    while (rosloop < (deltaT/ROSPERIOD))
     {
         cmd_vel_pub.publish(msg);
         this->loop_rate.sleep();
+        ++rosloop;
     }
     this->stopRobot();
 }
@@ -69,66 +73,33 @@ void AmazebotController::moveBackwards(float distance, float speed)
 void AmazebotController::turnLeft(int angle, float speed)
 {
     auto msg = geometry_msgs::Twist();
-    msg.angular.z = degToRad(angle / 4);
-    int start_angle = radToDeg(poseRobot.theta);
-    int end_angle = (start_angle + angle) % 360;
-    if ( radToDeg(poseRobot.theta) < end_angle) 
+    msg.angular.z = speed;
+    msg.linear.x = 0.0;
+    std::size_t rosloop = 0;
+    float deltaT = degToRad(angle)/speed;
+    while (rosloop < (deltaT/ROSPERIOD))
     {
-        while (radToDeg(poseRobot.theta) < end_angle && ros::ok)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
-    } 
-    
-    else if (radToDeg(poseRobot.theta) > end_angle)
-    {
-        while (radToDeg(poseRobot.theta) > 0 && ros::ok && radToDeg(poseRobot.theta) > end_angle)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
-
-        while (radToDeg(poseRobot.theta) < end_angle && ros::ok)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
+        cmd_vel_pub.publish(msg);
+        this->loop_rate.sleep();
+        ++rosloop;
     }
-
     this->stopRobot();
+
 }
 
 void AmazebotController::turnRight(int angle, float speed)
 {
     auto msg = geometry_msgs::Twist();
-    msg.angular.z = -degToRad(angle / 4);
-    float start_angle = poseRobot.theta;
-    float end_angle = fmod((start_angle + angle), (2 * M_PI));
-    if ( poseRobot.theta < end_angle) 
+    msg.angular.z = -speed;
+    msg.linear.x = 0.0;
+    std::size_t rosloop = 0;
+    float deltaT = degToRad(angle)/speed;
+    while (rosloop < (deltaT/ROSPERIOD))
     {
-        while (poseRobot.theta < end_angle && ros::ok)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
-    } 
-    
-    else if (poseRobot.theta > end_angle)
-    {
-        while (poseRobot.theta > 0 && ros::ok && poseRobot.theta > end_angle)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
-
-        while (poseRobot.theta < end_angle && ros::ok)
-        {
-            cmd_vel_pub.publish(msg);
-            this->loop_rate.sleep();
-        }
+        cmd_vel_pub.publish(msg);
+        this->loop_rate.sleep();
+        ++rosloop;
     }
-
     this->stopRobot();
 }
 
@@ -409,23 +380,30 @@ void AmazebotController::square_test()
 {
     current_time = ros::Time::now();
   	last_time = ros::Time::now();
-    // Send messages in a this->loop	
-    //this->odometryHelper();
-    //this->sensorHelper();
+    for(int i = 0 ; i < 10 ; ++i) 
+    {
+        current_time = ros::Time::now();	
+		
+        this->odometryHelper();
+        this->sensorHelper();
 
-    // Calculate the command to apply
-    this->turnLeft(90);
-    this->moveForward(0.5);
-    this->turnRight(90);
-    this->moveForward(0.5);
-    this->turnRight(90);
-    this->moveForward(0.5);
-    this->turnRight(90);
-    this->moveForward(0.5);
-    this->turnRight(90);
+        this->moveForward(6, 0.3);
+        this->turnRight(180, 0.2);
+        this->moveForward(6, 0.3);
+        this->turnRight(90, 0.1);
+        this->moveForward(6, 0.1);
+        this->turnRight(90, 0.3);
+        this->moveForward(6, 0.1);
+        this->turnRight(90, 0.5);
 
-    last_time = current_time;
-    ros::spinOnce();
+
+        this->initialPose();
+        last_time = current_time;
+        ros::spinOnce();
+
+        // And throttle the this->loop
+        this->loop_rate.sleep();
+    }
 }
 
 
