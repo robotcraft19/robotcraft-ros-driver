@@ -207,11 +207,12 @@ void AmazebotController::rightDistanceCallback(const std_msgs::Float32& right_di
  * 
  * @param Pose2D_msgs 
  */
-void AmazebotController::poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs)
+void AmazebotController::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
-    poseRobot.x = Pose2D_msgs.x;
-	poseRobot.y = Pose2D_msgs.y;
-	poseRobot.theta = Pose2D_msgs.theta;
+    poseRobot.x = msg->pose.pose.position.x;
+	poseRobot.y = msg->pose.pose.position.y;
+	poseRobot.theta = msg->pose.pose.orientation.z;
+    tf2::convert(msg->pose.pose.orientation,q);
 }
 
 /**
@@ -277,7 +278,7 @@ void AmazebotController::calculateRobotLost()
  * @brief 
  * 
  */
-void AmazebotController::odometryHelper() 
+/*void AmazebotController::odometryHelper() 
 {
     // Update the Pose to publish in the Odometry
     double dt = (current_time - last_time).toSec();
@@ -319,7 +320,7 @@ void AmazebotController::odometryHelper()
 
 	// Publish the odometry message
 	odom_pub.publish(odom_msg);  
-}
+}*/
 
 /**
  * @brief 
@@ -354,14 +355,13 @@ AmazebotController::AmazebotController() : loop_rate(10)
 
     //Subscribers
     this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
-	this->pose_sub = node_handle.subscribe("/pose", 10, &AmazebotController::poseCallback, this);
+	this->odom_sub = node_handle.subscribe("/odom", 10, &AmazebotController::odomCallback, this);
 	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, &AmazebotController::frontDistanceCallback, this);
 	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, &AmazebotController::rightDistanceCallback, this);
 	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
-	this->odom_pub = node_handle.advertise<nav_msgs::Odometry>("/odom", 10);
     this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
 	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
 	this->ir_front_pub = node_handle.advertise<sensor_msgs::Range>("/ir_front_sensor",10);
@@ -450,8 +450,8 @@ void AmazebotController::run()
     {
         current_time = ros::Time::now();	
 		
-        this->odometryHelper();
-        this->sensorHelper();
+        //this->odometryHelper();
+        //this->sensorHelper();
 
         // Calculate the command to apply
         auto msg = calculateCommand();

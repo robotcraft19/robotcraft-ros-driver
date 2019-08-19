@@ -25,6 +25,7 @@
 #include "std_msgs/Float32.h"
 #include "sensor_msgs/Range.h"
 #include "std_msgs/UInt8MultiArray.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #define THRESHOLD_DISTANCE 0.15
 
@@ -46,14 +47,13 @@ private:
     
     //Subscribers
     ros::Subscriber laser_sub;
-	ros::Subscriber pose_sub;
+	ros::Subscriber odom_sub;
 	ros::Subscriber front_distance_sub;
 	ros::Subscriber right_distance_sub;
 	ros::Subscriber left_distance_sub;
 
 	//Publishers
     ros::Publisher cmd_vel_pub;
-	ros::Publisher odom_pub;
     ros::Publisher rgb_leds_pub;
 	ros::Publisher initial_pose_pub;
     ros::Publisher ir_front_pub;
@@ -72,6 +72,7 @@ private:
     Pose initialPoseRobot;
     Pose poseRobot;
     Velocity velocityRobot;
+    tf2::Quaternion q;
 
     // Sensor Data
     float left_distance;
@@ -100,12 +101,12 @@ private:
 
 
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
-    void poseCallback(const geometry_msgs::Pose2D& Pose2D_msgs);
+    void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void frontDistanceCallback(const std_msgs::Float32& front_distance_msgs);
     void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
     void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
 
-    void odometryHelper();
+    //void odometryHelper();
     void sensorHelper();
     void initialPose();
 
