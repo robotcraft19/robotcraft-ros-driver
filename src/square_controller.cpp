@@ -149,7 +149,7 @@ void SquareController::run()
     while (ros::ok())
     {
         // Calculate the command to apply
-        auto msg = calculateCommand(4.0);
+        auto msg = calculateCommand(0.8);
 
         cmd_vel_pub.publish(msg);
 
