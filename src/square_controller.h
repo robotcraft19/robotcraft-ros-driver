@@ -14,64 +14,66 @@
 #ifndef AMAZEBOT_CONTROLLER_H
 #define AMAZEBOT_CONTROLLER_H
 
+#include <iostream>
+#include <math.h>
+#include <ros/console.h>
+
 #include "ros/ros.h"
-#include "sensor_msgs/LaserScan.h"
 #include "geometry_msgs/Twist.h"
-#include "nav_msgs/Odometry.h"
-#include "std_msgs/Float32.h"
+#include "geometry_msgs/Pose2D.h"
 #include "sensor_msgs/Range.h"
+#include "nav_msgs/Odometry.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "std_msgs/Float32.h"
 
-
-#define ROSRATE            10
+#define ROSRATE    10
 
 typedef struct {
     float x, y, theta;
 } Pose;
 
-typedef struct {
-    float x, y, theta;
-} Velocity;
+class SquareController
+{
 
-class AmazebotController {
+    private:
+        ros::NodeHandle node_handle;
 
-private:
-    ros::NodeHandle node_handle;
+        ros::Rate loop_rate;
 
-    ros::Rate loop_rate;
 
-	ros::Publisher cmd_vel_pub;
+        ros::Publisher cmd_vel_pub;
+        ros::Subscriber ir_front_sensor_sub;
+        ros::Subscriber ir_left_sensor_sub;
+        ros::Subscriber ir_right_sensor_sub;
+        ros::Subscriber odom_sub;
 
-    ros::Subscriber front_distance_sub;
-    ros::Subscriber left_distance_sub;
-    ros::Subscriber right_distance_sub;
+        geometry_msgs::Pose2D poseRobot;
 
-    // Message initialization
-    geometry_msgs::Twist twist_msg;	
+        Pose InitPose;
 
-    Pose poseRobot;
-    Velocity velocityRobot;
+        float target_angle1, target_angle2;
+        float leftIR, frontIR, rightIR;
 
-    // Sensor Data
-    float left_distance;
-    float front_distance;
-    float right_distance;
+        tf2::Quaternion q;
+        bool rotation;
+        geometry_msgs::Twist calculateCommand();
+        
+        void frontSensorCallback(const std_msgs::Float32& msg);
+        void rightSensorCallback(const std_msgs::Float32& msg);
+        void leftSensorCallback(const std_msgs::Float32& msg);
+        void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
 
-    float leftIR, frontIR, rightIR;
+        float degToRad(int angle);
+        int radToDeg(float angle);
+        float calcDistance(float x1, float x2, float y1, float y2);
 
-    void drawSquare();
+    public:
+        SquareController();
+        void run();
 
-    void frontDistanceCallback(const std_msgs::Float32& front_distance_msgs);
-    void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
-    void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
-public:
-
-    AmazebotController();
-    void moveForward(float speed);
-    void moveBackwards(float speed);
-    void turnLeft(float angle);
-    void turnRight(float angle);
-    void stopRobot();
-    void run();
 };
+
+
+
 
 #endif /** AMAZEBOT_CONTROLLER_H **/

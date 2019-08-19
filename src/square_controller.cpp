@@ -13,137 +13,134 @@
 
 #include "square_controller.h"
 
-void AmazebotController::stopRobot()
+SquareController::SquareController() : loop_rate(ROSRATE)
 {
-    twist_msg.linear.x = 0.0;
-    twist_msg.angular.z = 0.0;
-}
-
-void AmazebotController::moveForward(float speed)
-{
-    twist_msg.linear.x = speed;
-	twist_msg.angular.z= 0.0;
-}
-
-void AmazebotController::moveBackwards(float speed)
-{
-    twist_msg.linear.x = -speed;
-	twist_msg.angular.z=0.0;
-}
-
-void AmazebotController::turnLeft(float angle)
-{
-    twist_msg.linear.x = 0.0;
- 	twist_msg.angular.z= angle;
-}
-
-void AmazebotController::turnRight(float angle)
-{
-    twist_msg.linear.x = 0.0;
- 	twist_msg.angular.z = -angle;
-}
-
-/**
- * @brief Calculates controller commands and returns message of type Twist
- * 
- * @return geometry_msgs::Twist including linear and angular velocity
- */
-void AmazebotController::drawSquare() 
-{   
-    moveForward(2.0);
-    cmd_vel_pub.publish(twist_msg);
-    ros::Duration(5.0);
-    turnLeft(M_PI/2);
-    cmd_vel_pub.publish(twist_msg);
-    ros::Duration(5.0);
-    stopRobot();
-    cmd_vel_pub.publish(twist_msg);
-    ros::Duration(5.0);
-}
-
-/**
- * @brief 
- * 
- * @param front_distance_msgs 
- */
-void AmazebotController::frontDistanceCallback(const std_msgs::Float32& front_distance_msgs)
-{
-	frontIR = front_distance_msgs.data;
-    if (frontIR < 0.15) 
-    {
-        ROS_WARN("Careful ! Obstacle at detected at %f meters by front sensor", frontIR);
-    }
-}
-
-/**
- * @brief 
- * 
- * @param left_distance_msgs 
- */
-void AmazebotController::leftDistanceCallback(const std_msgs::Float32& left_distance_msgs)
-{
-	leftIR = left_distance_msgs.data;
-    if (leftIR < 0.15) 
-    {
-        ROS_WARN("Careful ! Obstacle at detected at %f meters by left sensor", leftIR);
-    }
-}
-
-/**
- * @brief 
- * 
- * @param right_distance_msgs 
- */
-void AmazebotController::rightDistanceCallback(const std_msgs::Float32& right_distance_msgs)
-{
-	rightIR = right_distance_msgs.data;
-    if (rightIR < 0.15) 
-    {
-        ROS_WARN("Careful ! Obstacle at detected at %f meters by right sensor", rightIR);
-    }
-}
-
-/**
- * @brief Construct a new Robot Controller:: Robot Controller object
- * 
- */
-AmazebotController::AmazebotController() : loop_rate(ROSRATE)
-{
-    // Initialize ROS
+    // Init ros node
     this->node_handle = ros::NodeHandle();
 
-    //Subscribers
-	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, &AmazebotController::frontDistanceCallback, this);
-	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, &AmazebotController::rightDistanceCallback, this);
-	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, &AmazebotController::leftDistanceCallback, this);
+    // Publish
+    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
 
-	//Publishers
-    this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel",10 );
+    // Subscribe
+    this->odom_sub = node_handle.subscribe("/odom", 10, &SquareController::odomCallback, this);
+    this->ir_front_sensor_sub = node_handle.subscribe("/ir_front_sensor", 10, &SquareController::frontSensorCallback, this);
+    this->ir_right_sensor_sub = node_handle.subscribe("/ir_right_sensor", 10, &SquareController::rightSensorCallback, this);
+    this->ir_left_sensor_sub = node_handle.subscribe("/ir_left_sensor", 10, &SquareController::leftSensorCallback, this);
 
+    InitPose.x = InitPose.y = InitPose.theta = 0.0;
+    rotation = false;
 }
 
-/**
- * @brief Run ROS
- * 
- */
-void AmazebotController::run()
+float SquareController::degToRad(int angle)
 {
-    while (ros::ok()) 
+    float rad = angle * M_PI / 180;
+    return (rad);
+}
+
+int SquareController::radToDeg(float angle)
+{
+    float deg = angle * 180 / M_PI;
+    return (deg);
+}
+
+float SquareController::calcDistance(float x1, float x2, float y1, float y2)
+{
+    return (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)));
+}
+
+geometry_msgs::Twist SquareController::calculateCommand()
+{
+    auto msg = geometry_msgs::Twist();
+    float distance = calcDistance(InitPose.x, poseRobot.x, InitPose.y, poseRobot.y);
+    float currentAngle = q.getAngle();
+
+    if (!rotation && distance < 4)
+    {
+        msg.linear.x = 1.0;
+        msg.angular.z = 0.0;
+    }
+    else if (!rotation)
+    {
+        msg.linear.x = 0.0;
+        rotation = 1;
+        InitPose.theta = currentAngle;
+    }
+    if (rotation == 1)
+    {
+        if (InitPose.theta < (M_PI/2))
+        {
+            target_angle1 = InitPose.theta + (M_PI/2);
+            target_angle2 = -InitPose.theta + (M_PI/2);
+        }
+        else
+        {
+            target_angle1 = M_PI - ((M_PI/2) - (M_PI - InitPose.theta));
+            target_angle2 = InitPose.theta - (M_PI/2);
+        }
+        rotation = 2;
+    }
+    else if (rotation == 2 && (abs(currentAngle - target_angle2) > 0.1 && abs(currentAngle - target_angle1) > 0.1))
+    {
+        msg.angular.z = -0.60;
+        msg.linear.x = 0.0;
+    }
+    else if (rotation == 2)
+    {
+        msg.angular.z = 0.0;
+        rotation = false;
+        InitPose.y = poseRobot.y;
+        InitPose.x = poseRobot.x;
+    }
+    return msg;
+}
+
+void SquareController::frontSensorCallback(const std_msgs::Float32& msg)
+{
+    frontIR = msg.data;
+    if (frontIR < 0.15)
+        ROS_WARN("Warning : Front sensor detecting obstacle at %f meters", frontIR);
+    if (frontIR < 0.10)
+        ROS_ERROR("You should not reach that statement : front sensor detecting obstacle closer than 0.1 meters !");
+}
+
+void SquareController::rightSensorCallback(const std_msgs::Float32& msg)
+{
+    rightIR = msg.data;
+    if (rightIR < 0.15)
+        ROS_WARN("Warning : Right sensor detecting obstacle at %f meters", rightIR);
+    if (rightIR < 0.10)
+        ROS_ERROR("You should not reach that statement : right sensor detecting obstacle closer than 0.1 meters !");
+}
+
+void SquareController::leftSensorCallback(const std_msgs::Float32& msg)
+{
+    leftIR = msg.data;
+    if (leftIR < 0.15)
+        ROS_WARN("Warning : Left sensor detecting obstacle at %f meters", leftIR);
+    if (leftIR < 0.10)
+        ROS_ERROR("You should not reach that statement : left sensor detecting obstacle closer than 0.1 meters !");
+}
+
+void SquareController::odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    poseRobot.x = msg->pose.pose.position.x;
+    poseRobot.y = msg->pose.pose.position.y;
+    poseRobot.theta = msg->pose.pose.orientation.z;
+    tf2::convert(msg->pose.pose.orientation, q);
+}
+
+void SquareController::run()
+{
+    while (ros::ok())
     {
         // Calculate the command to apply
-        moveForward(2.0);
-        cmd_vel_pub.publish(twist_msg);
-        ros::Duration(5.0);
-        turnLeft(M_PI/2);
-        cmd_vel_pub.publish(twist_msg);
-        ros::Duration(5.0);
-        stopRobot();
-        cmd_vel_pub.publish(twist_msg);
-        ros::Duration(5.0);
+        auto msg = calculateCommand();
+
+        cmd_vel_pub.publish(msg);
 
         ros::spinOnce();
 
-        // And throttle the this->loop
-        this->loop_rate.sleep();
+        // And throttle the loop
+        loop_rate.sleep();
     }
 }
