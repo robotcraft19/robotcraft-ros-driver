@@ -1,3 +1,3 @@
 <launch>
-  <node pkg = "robotcraft2018_driver_g20" name = "amazebot_driver_node" type = "amazebot" output = "screen"/>
+  <node pkg = "robotcraft2019_driver_g03" name = "robot_driver" type = "robot_driver" output = "screen"/>
 </launch>
