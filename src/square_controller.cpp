@@ -109,27 +109,27 @@ geometry_msgs::Twist SquareController::calculateCommand(float squareSize)
     return msg;
 }
 
-void SquareController::frontSensorCallback(const std_msgs::Float32& msg)
+void SquareController::frontSensorCallback(const sensor_msgs::Range& msg)
 {
-    frontIR = msg.data;
+    frontIR = msg.range;
     if (frontIR < 0.15)
         ROS_WARN("Warning : Front sensor detecting obstacle at %f meters", frontIR);
     if (frontIR < 0.10)
         ROS_ERROR("You should not reach that statement : front sensor detecting obstacle closer than 0.1 meters !");
 }
 
-void SquareController::rightSensorCallback(const std_msgs::Float32& msg)
+void SquareController::rightSensorCallback(const sensor_msgs::Range& msg)
 {
-    rightIR = msg.data;
+    rightIR = msg.range;
     if (rightIR < 0.15)
         ROS_WARN("Warning : Right sensor detecting obstacle at %f meters", rightIR);
     if (rightIR < 0.10)
         ROS_ERROR("You should not reach that statement : right sensor detecting obstacle closer than 0.1 meters !");
 }
 
-void SquareController::leftSensorCallback(const std_msgs::Float32& msg)
+void SquareController::leftSensorCallback(const sensor_msgs::Range& msg)
 {
-    leftIR = msg.data;
+    leftIR = msg.range;
     if (leftIR < 0.15)
         ROS_WARN("Warning : Left sensor detecting obstacle at %f meters", leftIR);
     if (leftIR < 0.10)

@@ -24,7 +24,7 @@
 #include "sensor_msgs/Range.h"
 #include "nav_msgs/Odometry.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include "std_msgs/Float32.h"
+#include "sensor_msgs/Range.h"
 
 #define ROSRATE    10
 
@@ -60,9 +60,9 @@ class SquareController
         int rotation;
         geometry_msgs::Twist calculateCommand(float squareSize);
         
-        void frontSensorCallback(const std_msgs::Float32& msg);
-        void rightSensorCallback(const std_msgs::Float32& msg);
-        void leftSensorCallback(const std_msgs::Float32& msg);
+        void frontSensorCallback(const sensor_msgs::Range& msg);
+        void rightSensorCallback(const sensor_msgs::Range& msg);
+        void leftSensorCallback(const sensor_msgs::Range& msg);
         void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
 
         float degToRad(int angle);
