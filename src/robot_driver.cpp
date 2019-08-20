@@ -165,7 +165,7 @@ public:
 
 int main(int argc, char **argv){
     // Initialize ROS
-    ros::init(argc, argv, "talker");
+    ros::init(argc, argv, "robot_driver");
 
     // Create our controller object and run it
     auto controller = RobotDriver();
