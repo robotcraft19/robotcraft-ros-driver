@@ -77,19 +77,19 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
     if (frontIR < THRESHOLD_DISTANCE) 
     {
         // Prevent robot from crashing
-        msg.angular.z = 1.0;
-        msg.linear.x = -0.05;
+        msg.angular.z = 0.6;
+        msg.linear.x = -0.08;
     } 
     else if (robot_lost == true)
     {
         // Robot is lost, go straight to find wall
-        msg.linear.x = 0.5;
+        msg.linear.x = 0.08;
     } 
     else 
     {
         // Robot keeps using normal PID controller
         float gain = calculateGain(rightIR);
-        msg.linear.x = 0.5;
+        msg.linear.x = 0.08;
         msg.angular.z = gain;
     }
     return msg;
@@ -100,9 +100,9 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
  * 
  * @param front_distance_msgs 
  */
-void AmazebotController::frontDistanceCallback(const std_msgs::Float32& front_distance_msgs)
+void AmazebotController::frontDistanceCallback(const sensor_msgs::Range& front_distance_msgs)
 {
-	frontIR = front_distance_msgs.data;
+	frontIR = front_distance_msgs.range;
 }
 
 /**
@@ -110,9 +110,9 @@ void AmazebotController::frontDistanceCallback(const std_msgs::Float32& front_di
  * 
  * @param left_distance_msgs 
  */
-void AmazebotController::leftDistanceCallback(const std_msgs::Float32& left_distance_msgs)
+void AmazebotController::leftDistanceCallback(const sensor_msgs::Range& left_distance_msgs)
 {
-	leftIR = left_distance_msgs.data;
+	leftIR = left_distance_msgs.range;
 }
 
 /**
@@ -120,9 +120,9 @@ void AmazebotController::leftDistanceCallback(const std_msgs::Float32& left_dist
  * 
  * @param right_distance_msgs 
  */
-void AmazebotController::rightDistanceCallback(const std_msgs::Float32& right_distance_msgs)
+void AmazebotController::rightDistanceCallback(const sensor_msgs::Range& right_distance_msgs)
 {
-	rightIR = right_distance_msgs.data;
+	rightIR = right_distance_msgs.range;
 }
 
 /**
@@ -183,9 +183,9 @@ void AmazebotController::calculateRobotLost()
     {
             ++lost_counter;
 
-            if (lost_counter >= 75) robot_lost = true;
+            if (lost_counter >= 150) robot_lost = true;
     } 
-    else if(frontIR < THRESHOLD_DISTANCE || rightIR < THRESHOLD_DISTANCE) 
+    else if((frontIR < THRESHOLD_DISTANCE && frontIR != -1) || (rightIR < THRESHOLD_DISTANCE && rightIR != -1)) 
     {
             robot_lost = false;
             lost_counter = 0;
@@ -213,18 +213,14 @@ AmazebotController::AmazebotController() : loop_rate(ROSRATE)
     //Subscribers
     this->laser_sub = node_handle.subscribe("/base_scan", 10, &AmazebotController::laserCallback, this);
 	this->odom_sub = node_handle.subscribe("/odom", 10, &AmazebotController::odomCallback, this);
-	this->front_distance_sub = node_handle.subscribe("/ir_front_distance", 10, &AmazebotController::frontDistanceCallback, this);
-	this->right_distance_sub = node_handle.subscribe("/ir_right_distance", 10, &AmazebotController::rightDistanceCallback, this);
-	this->left_distance_sub = node_handle.subscribe("/ir_left_distance", 10, &AmazebotController::leftDistanceCallback, this);
+	this->front_distance_sub = node_handle.subscribe("/ir_front_sensor", 10, &AmazebotController::frontDistanceCallback, this);
+	this->right_distance_sub = node_handle.subscribe("/ir_right_sensor", 10, &AmazebotController::rightDistanceCallback, this);
+	this->left_distance_sub = node_handle.subscribe("/ir_left_sensor", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
     this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
 	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
-	this->ir_front_pub = node_handle.advertise<sensor_msgs::Range>("/ir_front_sensor",10);
-	this->ir_left_pub  = node_handle.advertise<sensor_msgs::Range>("/ir_left_sensor",10);
-    this->ir_right_pub = node_handle.advertise<sensor_msgs::Range>("/ir_right_sensor",10);
-
 }
 
 /**

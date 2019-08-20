@@ -27,7 +27,7 @@
 #include "std_msgs/UInt8MultiArray.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
-#define THRESHOLD_DISTANCE 0.15
+#define THRESHOLD_DISTANCE 0.20
 #define ROSRATE            10
 #define ROSPERIOD          1/ROSRATE
 
@@ -58,9 +58,6 @@ private:
     ros::Publisher cmd_vel_pub;
     ros::Publisher rgb_leds_pub;
 	ros::Publisher initial_pose_pub;
-    ros::Publisher ir_front_pub;
-    ros::Publisher ir_right_pub;
-    ros::Publisher ir_left_pub;
 
     // Message initialization
     nav_msgs::Odometry odom_msg;
@@ -89,7 +86,7 @@ private:
     float integral_error;
     
     float target_value = THRESHOLD_DISTANCE;
-    float KP = 10.0;
+    float KP = 5.0;
     float KI = 0.0;
     float KD = 0.0;
     float time_interval = 0.1;
@@ -102,9 +99,9 @@ private:
 
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
-    void frontDistanceCallback(const std_msgs::Float32& front_distance_msgs);
-    void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
-    void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
+    void frontDistanceCallback(const sensor_msgs::Range& front_distance_msgs);
+    void rightDistanceCallback(const sensor_msgs::Range& right_distance_msgs);
+    void leftDistanceCallback(const sensor_msgs::Range& left_distance_msgs);
 
     float calculateGain(float value);
     void calculateRobotLost();
