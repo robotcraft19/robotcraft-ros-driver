@@ -13,23 +13,48 @@
 
 #include "amazebot_controller.h"
 
+/**
+ * @brief 
+ * 
+ * @param angle 
+ * @return float 
+ */
 float AmazebotController::degToRad(int angle)
 {
     float rad = angle * M_PI/180;
     return(rad);
 }
 
+/**
+ * @brief 
+ * 
+ * @param angle 
+ * @return int 
+ */
 int AmazebotController::radToDeg(float angle)
 {
     float deg = angle * 180/M_PI;
     return(deg);
 }
 
+/**
+ * @brief 
+ * 
+ * @param x1 
+ * @param x2 
+ * @param y1 
+ * @param y2 
+ * @return float 
+ */
 float AmazebotController::calcDistance(float x1, float x2, float y1, float y2)
 {
     return(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))) * 100;
 }
 
+/**
+ * @brief stops the robot
+ * 
+ */
 void AmazebotController::stopRobot()
 {
     auto msg = geometry_msgs::Twist();
@@ -168,19 +193,6 @@ void AmazebotController::calculateRobotLost()
 }
 
 /**
- * @brief 
- * 
- */
-void AmazebotController::initialPose() 
-{
-    // Publish initial pose data
-	initial_pose_msg.x = initialPoseRobot.x;
-	initial_pose_msg.y = initialPoseRobot.y;
-	initial_pose_msg.theta = initialPoseRobot.theta;		
-	initial_pose_pub.publish(initial_pose_msg);
-}
-
-/**
  * @brief Construct a new Robot Controller:: Robot Controller object
  * 
  */
@@ -215,49 +227,6 @@ AmazebotController::AmazebotController() : loop_rate(ROSRATE)
 
 }
 
-void AmazebotController::sensorHelper() 
-{
-    //publish front distance sensor
-	ir_front_msg.header.stamp = ros::Time::now();
-	ir_front_msg.header.frame_id = "front_ir";
-	ir_front_msg.radiation_type = 1,                    
-	ir_front_msg.field_of_view = 0.034906585;
-	ir_front_msg.min_range = 0.1;
-	ir_front_msg.max_range = 0.8;
-	ir_front_msg.range = frontIR;
-	ir_front_pub.publish(ir_front_msg);	
-	
-	//publish left distance sensor
-	ir_left_msg.header.stamp = ros::Time::now();
-	ir_left_msg.header.frame_id = "left_ir";
-	ir_left_msg.radiation_type = 1,                    
-	ir_left_msg.field_of_view = 0.034906585;
-	ir_left_msg.min_range = 0.1;
-	ir_left_msg.max_range = 0.8;
-	ir_left_msg.range = leftIR;
-	ir_left_pub.publish(ir_left_msg);
-	
-	//publish right distance sensor
-	ir_right_msg.header.stamp = ros::Time::now();
-	ir_right_msg.header.frame_id = "right_ir";
-	ir_right_msg.radiation_type = 1,                    
-	ir_right_msg.field_of_view = 0.034906585;
-	ir_right_msg.min_range = 0.1;
-	ir_right_msg.max_range = 0.8;
-	ir_right_msg.range = rightIR;
-	ir_right_pub.publish(ir_right_msg);				
-
-	//publish rgb led data
-	rgb_leds_msg.data.clear();
-    rgb_leds_msg.data.push_back(Led1_R);
-	rgb_leds_msg.data.push_back(Led1_G);
-	rgb_leds_msg.data.push_back(Led1_B);
-	rgb_leds_msg.data.push_back(Led2_R);
-	rgb_leds_msg.data.push_back(Led2_G);
-	rgb_leds_msg.data.push_back(Led2_B);
-	rgb_leds_pub.publish(rgb_leds_msg);	
-}
-
 /**
  * @brief Run ROS
  * 
@@ -269,19 +238,13 @@ void AmazebotController::run()
     // Send messages in a this->loop
     while (ros::ok()) 
     {
-        current_time = ros::Time::now();	
-		
-        //this->odometryHelper();
-        //this->sensorHelper();
-
+        current_time = ros::Time::now();	\
         // Calculate the command to apply
         auto msg = calculateCommand();
 
         // Publish the new command
         this->cmd_vel_pub.publish(msg);
 
-
-        this->initialPose();
         last_time = current_time;
         ros::spinOnce();
 

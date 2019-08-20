@@ -106,10 +106,6 @@ private:
     void rightDistanceCallback(const std_msgs::Float32& right_distance_msgs);
     void leftDistanceCallback(const std_msgs::Float32& left_distance_msgs);
 
-    //void odometryHelper();
-    void sensorHelper();
-    void initialPose();
-
     float calculateGain(float value);
     void calculateRobotLost();
 

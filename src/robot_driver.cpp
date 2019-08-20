@@ -162,7 +162,13 @@ public:
 
 };
 
-
+/**
+ * @brief 
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int main(int argc, char **argv){
     // Initialize ROS
     ros::init(argc, argv, "talker");
