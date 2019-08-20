@@ -77,9 +77,7 @@ private:
     tf2::Quaternion q;
 
     // Sensor Data
-    float left_distance;
-    float front_distance;
-    float right_distance;
+    float obstacle_distance;
 
     float leftIR, frontIR, rightIR;
 
@@ -112,11 +110,6 @@ private:
     void sensorHelper();
     void initialPose();
 
-    void moveForward(float distance, float speed);
-    void moveBackwards(float distance, float speed);
-    void turnLeft(int angle, float speed);
-    void turnRight(int angle, float speed);
-
     float calculateGain(float value);
     void calculateRobotLost();
 
@@ -128,8 +121,6 @@ public:
     float calcDistance(float x1, float x2, float y1, float y2);
     void stopRobot();
     void run();
-    void square_test();
-
 };
 
 #endif /** AMAZEBOT_CONTROLLER_H **/

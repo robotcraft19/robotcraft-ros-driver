@@ -38,71 +38,6 @@ void AmazebotController::stopRobot()
     cmd_vel_pub.publish(msg);
 }
 
-void AmazebotController::moveForward(float distance, float speed)
-{
-    auto msg = geometry_msgs::Twist();
-    msg.linear.x = speed;
-    msg.angular.z = 0.0;
-    std::size_t rosloop = 0;
-    float deltaT = distance/speed;
-    while (rosloop < (deltaT/ROSPERIOD))
-    {
-        cmd_vel_pub.publish(msg);
-        this->loop_rate.sleep();
-        ++rosloop;
-    }
-    this->stopRobot();
-}
-
-void AmazebotController::moveBackwards(float distance, float speed)
-{
-    auto msg = geometry_msgs::Twist();
-    msg.linear.x = -speed;
-    msg.angular.z = 0.0;
-    std::size_t rosloop = 0;
-    float deltaT = distance/speed;
-    while (rosloop < (deltaT/ROSPERIOD))
-    {
-        cmd_vel_pub.publish(msg);
-        this->loop_rate.sleep();
-        ++rosloop;
-    }
-    this->stopRobot();
-}
-
-void AmazebotController::turnLeft(int angle, float speed)
-{
-    auto msg = geometry_msgs::Twist();
-    msg.angular.z = speed;
-    msg.linear.x = 0.0;
-    std::size_t rosloop = 0;
-    float deltaT = degToRad(angle)/speed;
-    while (rosloop < (deltaT/ROSPERIOD))
-    {
-        cmd_vel_pub.publish(msg);
-        this->loop_rate.sleep();
-        ++rosloop;
-    }
-    this->stopRobot();
-
-}
-
-void AmazebotController::turnRight(int angle, float speed)
-{
-    auto msg = geometry_msgs::Twist();
-    msg.angular.z = -speed;
-    msg.linear.x = 0.0;
-    std::size_t rosloop = 0;
-    float deltaT = degToRad(angle)/speed;
-    while (rosloop < (deltaT/ROSPERIOD))
-    {
-        cmd_vel_pub.publish(msg);
-        this->loop_rate.sleep();
-        ++rosloop;
-    }
-    this->stopRobot();
-}
-
 /**
  * @brief Calculates controller commands and returns message of type Twist
  * 
@@ -185,14 +120,9 @@ void AmazebotController::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
  */
 void AmazebotController::laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg) 
 {
-    // Calculate array size of ranges
-    int ranges_len = (msg->angle_max - msg->angle_min) / msg->angle_increment;
-    int split_size = ranges_len / 3;
-
-    // Split sensor data into three areas and extract smallest distance
-    right_distance = *std::min_element(msg->ranges.begin(), msg->ranges.begin()+split_size);
-    front_distance = *std::min_element(msg->ranges.begin()+split_size, msg->ranges.begin()+2*split_size);
-    left_distance = *std::min_element(msg->ranges.begin()+2*split_size, msg->ranges.begin()+ranges_len);
+    // Calculate smallest distance
+    obstacle_distance = *std::min_element(msg->ranges.begin(), msg->ranges.end());
+    ROS_INFO("Min distance to obstacle: %f", obstacle_distance);
 }
 
 /**
@@ -241,54 +171,6 @@ void AmazebotController::calculateRobotLost()
  * @brief 
  * 
  */
-/*void AmazebotController::odometryHelper() 
-{
-    // Update the Pose to publish in the Odometry
-    double dt = (current_time - last_time).toSec();
-    double delta_x = (velocityRobot.x * cos(poseRobot.theta) - velocityRobot.y * sin(velocityRobot.theta)) * dt;
-    double delta_y = (velocityRobot.x * sin(poseRobot.theta) - velocityRobot.y * cos(velocityRobot.theta)) * dt;
-    double delta_theta = velocityRobot.theta * dt;
-
-    poseRobot.x += delta_x;
-    poseRobot.y += delta_y;
-    poseRobot.theta += delta_theta;
-
-    // Setting up the Transforn with the Odometry updates
-    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(poseRobot.theta);    
-	geometry_msgs::TransformStamped odom_trans;
-	odom_trans.header.stamp = current_time;
-	odom_trans.header.frame_id = "odom";
-	odom_trans.child_frame_id = "base_link";
-  	odom_trans.transform.translation.x = (poseRobot.x)/100;
-    odom_trans.transform.translation.y = (poseRobot.y)/100;
-    odom_trans.transform.translation.z = 0.0;
-    odom_trans.transform.rotation = odom_quat;
-
-    // Sending the transform
-    odom_broadcaster.sendTransform(odom_trans);
-
-    // Setting new pose
-	odom_msg.header.stamp = current_time;
-	odom_msg.header.frame_id = "odom";
-	odom_msg.pose.pose.position.x = poseRobot.x;
-	odom_msg.pose.pose.position.y = poseRobot.y;
- 	odom_msg.pose.pose.position.z = 0.0;
-	odom_msg.pose.pose.orientation = odom_quat;
-
-    // Setting velocity
-	odom_msg.child_frame_id = "base_link";
-    odom_msg.twist.twist.linear.x = velocityRobot.x;
-    odom_msg.twist.twist.linear.y = velocityRobot.y;
-    odom_msg.twist.twist.angular.z = velocityRobot.theta;
-
-	// Publish the odometry message
-	odom_pub.publish(odom_msg);  
-}*/
-
-/**
- * @brief 
- * 
- */
 void AmazebotController::initialPose() 
 {
     // Publish initial pose data
@@ -317,11 +199,11 @@ AmazebotController::AmazebotController() : loop_rate(ROSRATE)
     velocityRobot.theta = 0.0;
 
     //Subscribers
-    this->laser_sub = node_handle.subscribe("base_scan", 10, &AmazebotController::laserCallback, this);
+    this->laser_sub = node_handle.subscribe("/base_scan", 10, &AmazebotController::laserCallback, this);
 	this->odom_sub = node_handle.subscribe("/odom", 10, &AmazebotController::odomCallback, this);
-	this->front_distance_sub = node_handle.subscribe("/front_distance", 10, &AmazebotController::frontDistanceCallback, this);
-	this->right_distance_sub = node_handle.subscribe("/right_distance", 10, &AmazebotController::rightDistanceCallback, this);
-	this->left_distance_sub = node_handle.subscribe("/left_distance", 10, &AmazebotController::leftDistanceCallback, this);
+	this->front_distance_sub = node_handle.subscribe("/ir_front_distance", 10, &AmazebotController::frontDistanceCallback, this);
+	this->right_distance_sub = node_handle.subscribe("/ir_right_distance", 10, &AmazebotController::rightDistanceCallback, this);
+	this->left_distance_sub = node_handle.subscribe("/ir_left_distance", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
@@ -375,37 +257,6 @@ void AmazebotController::sensorHelper()
 	rgb_leds_msg.data.push_back(Led2_B);
 	rgb_leds_pub.publish(rgb_leds_msg);	
 }
-
-void AmazebotController::square_test()
-{
-    current_time = ros::Time::now();
-  	last_time = ros::Time::now();
-    for(int i = 0 ; i < 10 ; ++i) 
-    {
-        current_time = ros::Time::now();	
-		
-        //this->odometryHelper();
-        this->sensorHelper();
-
-        this->moveForward(6, 0.3);
-        this->turnRight(180, 0.2);
-        this->moveForward(6, 0.3);
-        this->turnRight(90, 0.1);
-        this->moveForward(6, 0.1);
-        this->turnRight(90, 0.3);
-        this->moveForward(6, 0.1);
-        this->turnRight(90, 0.5);
-
-
-        this->initialPose();
-        last_time = current_time;
-        ros::spinOnce();
-
-        // And throttle the this->loop
-        this->loop_rate.sleep();
-    }
-}
-
 
 /**
  * @brief Run ROS
