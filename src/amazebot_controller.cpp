@@ -111,7 +111,11 @@ float AmazebotController::calculateGain(float value)
     ROS_INFO("Gain: %f, P: %f, I: %f, D: %f", gain, error, new_int_err, new_der_err);
 
     //if(gain > 0.5) gain = 0.3;
+<<<<<<< HEAD
     if(gain < -0.4) gain = -0.4;
+=======
+    if(gain < -0.2) gain = -0.2;
+>>>>>>> 695beef1106f453ddfb56856413c5ae2b020719b
 
     return gain;
 }
