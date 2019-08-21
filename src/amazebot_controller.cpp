@@ -28,7 +28,7 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
     if (frontIR < THRESHOLD_DISTANCE) 
     {
         // Prevent robot from crashing
-        msg.angular.z = 1.5;
+        msg.angular.z = 1.25; // maximum value
         msg.linear.x = -0.04;
     } 
     else if (robot_lost == true)
@@ -109,6 +109,9 @@ float AmazebotController::calculateGain(float value)
     this->integral_error = new_int_err;         
 
     ROS_INFO("Gain: %f, P: %f, I: %f, D: %f", gain, error, new_int_err, new_der_err);
+
+    //if(gain > 0.5) gain = 0.3;
+    if(gain < -0.4) gain = -0.4;
 
     return gain;
 }
