@@ -14,56 +14,6 @@
 #include "amazebot_controller.h"
 
 /**
- * @brief 
- * 
- * @param angle 
- * @return float 
- */
-float AmazebotController::degToRad(int angle)
-{
-    float rad = angle * M_PI/180;
-    return(rad);
-}
-
-/**
- * @brief 
- * 
- * @param angle 
- * @return int 
- */
-int AmazebotController::radToDeg(float angle)
-{
-    float deg = angle * 180/M_PI;
-    return(deg);
-}
-
-/**
- * @brief 
- * 
- * @param x1 
- * @param x2 
- * @param y1 
- * @param y2 
- * @return float 
- */
-float AmazebotController::calcDistance(float x1, float x2, float y1, float y2)
-{
-    return(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))) * 100;
-}
-
-/**
- * @brief stops the robot
- * 
- */
-void AmazebotController::stopRobot()
-{
-    auto msg = geometry_msgs::Twist();
-    msg.linear.x = 0.0;
-    msg.angular.z = 0.0;
-    cmd_vel_pub.publish(msg);
-}
-
-/**
  * @brief Calculates controller commands and returns message of type Twist
  * 
  * @return geometry_msgs::Twist including linear and angular velocity
@@ -73,18 +23,20 @@ geometry_msgs::Twist AmazebotController::calculateCommand()
     calculateRobotLost();
 
     auto msg = geometry_msgs::Twist();
+    
         
     if (frontIR < THRESHOLD_DISTANCE) 
     {
         // Prevent robot from crashing
-        msg.angular.z = 0.6;
-        msg.linear.x = -0.08;
+        msg.angular.z = 1.5;
+        msg.linear.x = -0.04;
     } 
     else if (robot_lost == true)
     {
         // Robot is lost, go straight to find wall
         msg.linear.x = 0.08;
     } 
+    
     else 
     {
         // Robot keeps using normal PID controller
@@ -139,18 +91,6 @@ void AmazebotController::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 }
 
 /**
- * @brief Laser Scan callback of subscriber
- * 
- * @param msg LaserScan message received by subscriber
- */
-void AmazebotController::laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg) 
-{
-    // Calculate smallest distance
-    obstacle_distance = *std::min_element(msg->ranges.begin(), msg->ranges.end());
-    ROS_INFO("Min distance to obstacle: %f", obstacle_distance);
-}
-
-/**
  * @brief PID controller that calculates angular rotation
  * 
  * @param value Current distance to wall (real value) of robot
@@ -168,6 +108,8 @@ float AmazebotController::calculateGain(float value)
     this->old_prop_error = error;
     this->integral_error = new_int_err;         
 
+    ROS_INFO("Gain: %f, P: %f, I: %f, D: %f", gain, error, new_int_err, new_der_err);
+
     return gain;
 }
 
@@ -183,44 +125,42 @@ void AmazebotController::calculateRobotLost()
     {
             ++lost_counter;
 
-            if (lost_counter >= 150) robot_lost = true;
+            if (lost_counter >= 50) robot_lost = true;
     } 
     else if((frontIR < THRESHOLD_DISTANCE && frontIR != -1) || (rightIR < THRESHOLD_DISTANCE && rightIR != -1)) 
     {
             robot_lost = false;
             lost_counter = 0;
     }
+
 }
 
 /**
  * @brief Construct a new Robot Controller:: Robot Controller object
  * 
  */
-AmazebotController::AmazebotController() : loop_rate(ROSRATE)
+AmazebotController::AmazebotController()
 {
     // Initialize ROS
     this->node_handle = ros::NodeHandle();
 
-    Led1_R = Led2_R = 0;
-    Led1_G = Led2_G = 150;
-    Led1_B = Led2_B = 100;
-
-    initialPoseRobot.x = initialPoseRobot.y = initialPoseRobot.theta = 0;
-    velocityRobot.x = 0.0;
-    velocityRobot.y = 0.0;
-    velocityRobot.theta = 0.0;
-
     //Subscribers
-    this->laser_sub = node_handle.subscribe("/base_scan", 10, &AmazebotController::laserCallback, this);
-	this->odom_sub = node_handle.subscribe("/odom", 10, &AmazebotController::odomCallback, this);
-	this->front_distance_sub = node_handle.subscribe("/ir_front_sensor", 10, &AmazebotController::frontDistanceCallback, this);
-	this->right_distance_sub = node_handle.subscribe("/ir_right_sensor", 10, &AmazebotController::rightDistanceCallback, this);
-	this->left_distance_sub = node_handle.subscribe("/ir_left_sensor", 10, &AmazebotController::leftDistanceCallback, this);
+	this->odom_sub = this->node_handle.subscribe("/odom", 10, &AmazebotController::odomCallback, this);
+	this->front_distance_sub = this->node_handle.subscribe("/ir_front_sensor", 10, &AmazebotController::frontDistanceCallback, this);
+	this->right_distance_sub = this->node_handle.subscribe("/ir_right_sensor", 10, &AmazebotController::rightDistanceCallback, this);
+	this->left_distance_sub = this->node_handle.subscribe("/ir_left_sensor", 10, &AmazebotController::leftDistanceCallback, this);
 
 	//Publishers
     this->cmd_vel_pub = this->node_handle.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
-    this->rgb_leds_pub = node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 60);
-	this->initial_pose_pub = node_handle.advertise<geometry_msgs::Pose2D>("/initial_pose", 10);
+    this->rgb_leds_pub = this->node_handle.advertise<std_msgs::UInt8MultiArray>("/rgb_leds", 10);
+	this->set_pose_pub = this->node_handle.advertise<geometry_msgs::Pose2D>("/set_pose", 10);
+
+    //Load Params
+    this->node_handle.getParam("KD", this->KD);
+    this->node_handle.getParam("KI", this->KI);
+    this->node_handle.getParam("KP", this->KP);  
+    ROS_WARN("KP: %f, KI: %f, KD: %f", this->KP, this->KI, this->KD);  
+
 }
 
 /**
@@ -229,22 +169,21 @@ AmazebotController::AmazebotController() : loop_rate(ROSRATE)
  */
 void AmazebotController::run()
 {
-    current_time = ros::Time::now();
-  	last_time = ros::Time::now();
-    // Send messages in a this->loop
+    ros::Rate loop_rate(10);
+
+    // Send messages in a loop
     while (ros::ok()) 
     {
-        current_time = ros::Time::now();	\
         // Calculate the command to apply
         auto msg = calculateCommand();
 
         // Publish the new command
         this->cmd_vel_pub.publish(msg);
 
-        last_time = current_time;
+        // Receive messages
         ros::spinOnce();
 
-        // And throttle the this->loop
-        this->loop_rate.sleep();
+        // And throttle the loop
+        loop_rate.sleep();
     }
 }

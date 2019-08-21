@@ -28,8 +28,6 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #define THRESHOLD_DISTANCE 0.20
-#define ROSRATE            10
-#define ROSPERIOD          1/ROSRATE
 
 typedef struct {
     float x, y, theta;
@@ -43,12 +41,8 @@ class AmazebotController {
 
 private:
     ros::NodeHandle node_handle;
-    tf::TransformBroadcaster odom_broadcaster;
-
-    ros::Rate loop_rate;
     
     //Subscribers
-    ros::Subscriber laser_sub;
 	ros::Subscriber odom_sub;
 	ros::Subscriber front_distance_sub;
 	ros::Subscriber right_distance_sub;
@@ -57,38 +51,23 @@ private:
 	//Publishers
     ros::Publisher cmd_vel_pub;
     ros::Publisher rgb_leds_pub;
-	ros::Publisher initial_pose_pub;
-
-    // Message initialization
-    nav_msgs::Odometry odom_msg;
-	sensor_msgs::Range ir_front_msg, ir_left_msg, ir_right_msg;
-    std_msgs::UInt8MultiArray rgb_leds_msg;
-	geometry_msgs::Pose2D initial_pose_msg;	
-	ros::Time current_time, last_time;
-
+	ros::Publisher set_pose_pub;
     
     // Transform Helpers
-    Pose initialPoseRobot;
     Pose poseRobot;
-    Velocity velocityRobot;
     tf2::Quaternion q;
 
     // Sensor Data
-    float obstacle_distance;
-
     float leftIR, frontIR, rightIR;
-
-    int Led1_R, Led1_G, Led1_B;
-    int Led2_R, Led2_G, Led2_B;
 
     // PID control
     float old_prop_error;
     float integral_error;
     
     float target_value = THRESHOLD_DISTANCE;
-    float KP = 5.0;
-    float KI = 0.0;
-    float KD = 0.0;
+    float KP = 10.00;
+    float KI = 0.00;
+    float KD = 0.00;
     float time_interval = 0.1;
 
     bool robot_lost;
@@ -97,7 +76,6 @@ private:
     geometry_msgs::Twist calculateCommand();
 
 
-    void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void frontDistanceCallback(const sensor_msgs::Range& front_distance_msgs);
     void rightDistanceCallback(const sensor_msgs::Range& right_distance_msgs);
@@ -109,10 +87,6 @@ private:
 public:
 
     AmazebotController();
-    float degToRad(int angle);
-    int radToDeg(float angle);
-    float calcDistance(float x1, float x2, float y1, float y2);
-    void stopRobot();
     void run();
 };
 

@@ -1,0 +1,8 @@
+<launch>
+	<param name="KP" value="10.0"/>
+    <param name="KI" value="0.1"/>
+    <param name="KD" value="1.0"/>
+
+	<node pkg="robotcraft2019_driver_g03" type="amazebot" name="amazebot" output="screen">
+    </node> 
+</launch>
