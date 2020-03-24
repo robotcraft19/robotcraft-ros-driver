@@ -1,7 +1,7 @@
 <launch>
 
-	<node pkg="stage_ros" type="stageros" name="stage_ros_node" args="$(find robotcraft2019_driver_g03)/worlds/rooms.world" />
-	<node pkg="robotcraft2019_driver_g03" type="amazebot" name="amazebot_node" output="screen"/>
+	<node pkg="stage_ros" type="stageros" name="stage_ros_node" args="$(find amazebot-ros-driver)/worlds/rooms.world" />
+	<node pkg="amazebot-ros-driver" type="amazebot" name="amazebot_node" output="screen"/>
 
 	<include file="$(find robotcraft2019_robot_description)/launch/display_robotcraft2019.launch"/>
 
