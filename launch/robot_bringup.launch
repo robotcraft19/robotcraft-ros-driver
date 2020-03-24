@@ -2,6 +2,6 @@
 	<include file="$(find amazebot-ros-driver)/launch/robot_firmware.launch"/>
 	<include file="$(find amazebot-ros-driver)/launch/robot_driver.launch"/>
 	<!--
-	<include file="$(find robotcraft2019_robot_description)/launch/display_robotcraft2019.launch"/>
+	<include file="$(find amazebot-model-description)/launch/display_robotcraft2019.launch"/>
 	-->
 </launch>

@@ -7,13 +7,13 @@
     </node>
 
 	<!--ROBOT DRIVER-->
-	<node pkg = "robotcraft2018_driver_g20" name = "amazebot_driver_node" type = "amazebot" output = "screen"/>
-	<node pkg = "robotcraft2018_driver_g20" name = "square_test_node" type = "square_test" output = "screen"/>
+	<node pkg = "amazebot-ros-driver" name = "amazebot_driver_node" type = "amazebot" output = "screen"/>
+	<node pkg = "amazebot-ros-driver" name = "square_test_node" type = "square_test" output = "screen"/>
     
 	<!--ROBOT_DISPLAY-->
-	<param name="robot_description" textfile="$(find robotcraft2018_robot_description)/urdf/robotcraft2018.urdf" />
+	<param name="robot_description" textfile="$(find amazebot-model-description)/urdf/robotcraft2019.urdf" />
       
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robotcraft2018_robot_description)/robotcraft2018_robot.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find amazebot-model-description)/robotcraft2019_robot.rviz" />
 
 	<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
             <remap from="joint_state" to="joint_state"/>
