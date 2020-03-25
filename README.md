@@ -8,7 +8,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/robotcraft19/amazebot-ros-driver>
-    <img src="res/images/logo_amazebot.png" alt="Logo" width="100" height="100">
+    <img src="res/logo_amazebot.png" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">Amazebot Driver Package</h3>
@@ -44,7 +44,7 @@
 
 <p align="center">
   <a href="https://github.com/robotcraft19/amazebot-ros-driver>
-    <img src="res/images/maze.png" alt="About" width="300" height="160">
+    <img src="res/maze.png" alt="About" width="300" height="160">
   </a>
 </p>
 
