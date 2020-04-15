@@ -1,3 +1,3 @@
 <launch>
-  <node pkg = "amazebot-ros-driver" name = "robot_driver" type = "robot_driver" output = "screen"/>
+  <node pkg = "robotcraft-ros-driver" name = "robot_driver" type = "robot_driver" output = "screen"/>
 </launch>

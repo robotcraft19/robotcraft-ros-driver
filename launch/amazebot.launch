@@ -3,6 +3,6 @@
     <param name="KI" value="0.1"/>
     <param name="KD" value="1.0"/>
 
-	<node pkg="amazebot-ros-driver" type="amazebot" name="amazebot" output="screen">
+	<node pkg="robotcraft-ros-driver" type="amazebot" name="amazebot" output="screen">
     </node> 
 </launch>

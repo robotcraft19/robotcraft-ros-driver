@@ -7,9 +7,9 @@
 
 <br />
 <p align="center">
-  <a href="https://github.com/robotcraft19/amazebot-ros-driver>
+  <a href="https://github.com/robotcraft19/robotcraft-ros-driver>
     <img src="res/images/logo_amazebot.png" alt="Logo" width="100" height="100">
-    <img src="https://raw.githubusercontent.com/robotcraft19/amazebot-pathfinding-stage/master/res/images/logo_amazebot.png">
+    <img src="https://raw.githubusercontent.com/robotcraft19/robotcraft-pathfinding-stage/master/res/images/logo_amazebot.png">
   </a>
 
   <h3 align="center">Amazebot Driver Package</h3>
@@ -17,14 +17,14 @@
   <p align="center">
     ROS Driver of the Amazebot. Data is shared between the Arduino Mega and the Raspberry Pi through the serial port. Several nodes are available, including the square test to highlight odometry errors, robot bringup, as well as the wallfollowing package applied on the actual robot.
     <br />
-    <a href="https://github.com/robotcraft19/amazebot-ros-driver"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/robotcraft19/robotcraft-ros-driver"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/robotcraft19/amazebot-ros-driver">View Demo</a>
+    <a href="https://github.com/robotcraft19/robotcraft-ros-driver">View Demo</a>
     ·
-    <a href="https://github.com/robotcraft19/amazebot-ros-driver/issues">Report Bug</a>
+    <a href="https://github.com/robotcraft19/robotcraft-ros-driver/issues">Report Bug</a>
     ·
-    <a href="https://github.com/robotcraft19/amazebot-ros-driver/issues">Request Feature</a>
+    <a href="https://github.com/robotcraft19/robotcraft-ros-driver/issues">Request Feature</a>
   </p>
 </p>
 
@@ -44,9 +44,9 @@
 ## About the Project
 
 <p align="center">
-  <a href="https://github.com/robotcraft19/amazebot-ros-driver>
+  <a href="https://github.com/robotcraft19/robotcraft-ros-driver>
     <img src="res/images/maze.png" alt="Banner" width="400" height="260">
-    <img src="https://raw.githubusercontent.com/robotcraft19/amazebot-ros-navigation/master/res/images/maze.png">
+    <img src="https://raw.githubusercontent.com/robotcraft19/robotcraft-ros-navigation/master/res/images/maze.png">
   </a>
 </p>
 
@@ -62,8 +62,8 @@ Now that you have ROS, to setup the project on your local machine:
 
 1. Click on `Fork`.
 2. Go to your fork and `clone` the project to your local machine, in the "catkin_ws" folder.
-3. `git clone https://github.com/robotcraft19/amazebot-ros-driver.git`
-4. `git clone https://github.com/robotcraft19/amazebot-model-description.git`
+3. `git clone https://github.com/robotcraft19/robotcraft-ros-driver.git`
+4. `git clone https://github.com/robotcraft19/robotcraft-model-description.git`
 5. Make sure you have rosdep install : `sudo apt-get install python-rosdep && sudo rosdep init`
 6. `cd ~/catkin_ws`
 7. `rosdep install --from-paths src --ignore-src -r -y`
@@ -79,23 +79,23 @@ Running the nodes is quite easy as launch files were made.
 
 ### Configuration :
 
-- Amazebot Controller : `roslaunch amazebot-ros-driver amazebot.launch`
-- Amazebot Bringup : `roslaunch amazebot-ros-driver robot_bringup.launch`
-- Amazebot ROS Driver : `roslaunch amazebot-ros-driver robot_driver.launch`
-- Amazebot Arduino Com : `roslaunch amazebot-ros-driver robot_firmware.launch`
+- Amazebot Controller : `roslaunch robotcraft-ros-driver amazebot.launch`
+- Amazebot Bringup : `roslaunch robotcraft-ros-driver robot_bringup.launch`
+- Amazebot ROS Driver : `roslaunch robotcraft-ros-driver robot_driver.launch`
+- Amazebot Arduino Com : `roslaunch robotcraft-ros-driver robot_firmware.launch`
 
 ### Tests :
 
-- Stage Simulation : `roslaunch amazebot-ros-driver stage_test.launch`
-- Draw A Square :  `roslaunch amazebot-ros-driver robot_test.launch`
+- Stage Simulation : `roslaunch robotcraft-ros-driver stage_test.launch`
+- Draw A Square :  `roslaunch robotcraft-ros-driver robot_test.launch`
 
 ### Maze Solver :
 
-- Wallfollower :  `roslaunch amazebot-ros-driver wallfollower.launch`
+- Wallfollower :  `roslaunch robotcraft-ros-driver wallfollower.launch`
 
 ## Roadmap
 
-See the [open issues](https://github.com/robotcraft19/amazebot-ros-driver/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/robotcraft19/robotcraft-ros-driver/issues) for a list of proposed features (and known issues).
 
 ## Contribute
 
@@ -103,7 +103,7 @@ Contributions are what make the open source community such an amazing place to l
 
 ### Contribute on proposed features
 
-1. Choose any open issue from [here](https://github.com/robotcraft19/amazebot-ros-driver/issues). 
+1. Choose any open issue from [here](https://github.com/robotcraft19/robotcraft-ros-driver/issues). 
 2. Comment on the issue: `Can I work on this?` and get assigned.
 3. Make changes to your fork and send a PR.
 
@@ -148,15 +148,15 @@ Everyone part of the original team or that assisted throughout the development.
 - [Oleksandr Koreiba](https://github.com/paradauz)
 - [Erwin Lejeune](https://github.com/Guilyx)
 
-[contributors-shield]: https://img.shields.io/github/contributors/robotcraft19/amazebot-ros-driver.svg?style=flat-square
-[contributors-url]: https://github.com/robotcraft19/amazebot-ros-driver/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/robotcraft19/amazebot-ros-driver.svg?style=flat-square
-[forks-url]: https://github.com/robotcraft19/amazebot-ros-driver/network/members
-[stars-shield]: https://img.shields.io/github/stars/robotcraft19/amazebot-ros-driver.svg?style=flat-square
-[stars-url]: https://github.com/robotcraft19/amazebot-ros-driver/stargazers
-[issues-shield]: https://img.shields.io/github/issues/robotcraft19/amazebot-ros-driver.svg?style=flat-square
-[issues-url]: https://github.com/robotcraft19/amazebot-ros-driver/issues
-[license-shield]: https://img.shields.io/github/license/robotcraft19/amazebot-ros-driver.svg?style=flat-square
-[license-url]: https://github.com/robotcraft19/amazebot-ros-driver/blob/master/LICENSE.md
+[contributors-shield]: https://img.shields.io/github/contributors/robotcraft19/robotcraft-ros-driver.svg?style=flat-square
+[contributors-url]: https://github.com/robotcraft19/robotcraft-ros-driver/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/robotcraft19/robotcraft-ros-driver.svg?style=flat-square
+[forks-url]: https://github.com/robotcraft19/robotcraft-ros-driver/network/members
+[stars-shield]: https://img.shields.io/github/stars/robotcraft19/robotcraft-ros-driver.svg?style=flat-square
+[stars-url]: https://github.com/robotcraft19/robotcraft-ros-driver/stargazers
+[issues-shield]: https://img.shields.io/github/issues/robotcraft19/robotcraft-ros-driver.svg?style=flat-square
+[issues-url]: https://github.com/robotcraft19/robotcraft-ros-driver/issues
+[license-shield]: https://img.shields.io/github/license/robotcraft19/robotcraft-ros-driver.svg?style=flat-square
+[license-url]: https://github.com/robotcraft19/robotcraft-ros-driver/blob/master/LICENSE.md
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/erwinlejeune-lkn

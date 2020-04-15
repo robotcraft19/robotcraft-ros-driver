@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(amazebot-ros-driver)
+project(robotcraft-ros-driver)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
